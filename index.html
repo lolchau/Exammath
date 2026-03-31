@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathExam 12 — Hệ thống kiểm tra Toán</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --surface2: #21262d;
+            --border: #30363d;
+            --accent: #f78166;
+            --accent2: #79c0ff;
+            --accent3: #56d364;
+            --accent4: #e3b341;
+            --text: #e6edf3;
+            --muted: #8b949e;
+            --danger: #f85149;
+            --radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* SPLASH */
+        #splash {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .grid-bg {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(247, 129, 102, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(247, 129, 102, 0.06) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black, transparent);
+        }
+
+        .splash-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(247, 129, 102, 0.12) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .splash-logo {
+            font-family: 'Space Mono', monospace;
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -2px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            animation: fadeDown 0.6s ease forwards;
+        }
+
+        .splash-sub {
+            color: var(--muted);
+            font-size: 1rem;
+            margin-top: 8px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 500;
+            position: relative;
+            animation: fadeDown 0.6s 0.1s ease both;
+        }
+
+        .role-cards {
+            display: flex;
+            gap: 24px;
+            margin-top: 56px;
+            position: relative;
+            animation: fadeUp 0.6s 0.2s ease both;
+        }
+
+        .role-card {
+            width: 220px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 36px 28px;
+            cursor: pointer;
+            transition: all 0.25s;
+            text-align: center;
+        }
+
+        .role-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(247, 129, 102, 0.15);
+        }
+
+        .role-icon {
+            font-size: 2.4rem;
+            margin-bottom: 16px;
+        }
+
+        .role-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .role-desc {
+            font-size: 0.82rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        /* SHARED */
+        #app {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topbar-logo {
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 1.1rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .badge {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #0d1117;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.85;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 5px 14px;
+            font-size: 0.8rem;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border);
+        }
+
+        .btn-ghost:hover {
+            color: var(--text);
+            border-color: var(--muted);
+        }
+
+        .main {
+            padding: 32px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* TEACHER */
+        #teacher-view {
+            display: none;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 28px;
+            width: fit-content;
+        }
+
+        .tab {
+            padding: 8px 22px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--muted);
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+        }
+
+        .tab.active {
+            background: var(--accent);
+            color: #0d1117;
+        }
+
+        .builder-header {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .form-group label {
+            font-size: 0.82rem;
+            color: var(--muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="password"],
+        textarea,
+        select {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.92rem;
+            outline: none;
+            transition: border-color 0.2s;
+            width: 100%;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--accent2);
+        }
+
+        .question-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 16px;
+            position: relative;
+            transition: border-color 0.2s;
+        }
+
+        .q-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .q-num {
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            color: #0d1117;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .q-content {
+            flex: 1;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .option-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .option-label {
+            width: 28px;
+            height: 28px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-label.correct {
+            border-color: var(--accent3);
+            background: rgba(86, 211, 100, 0.15);
+            color: var(--accent3);
+        }
+
+        .add-q-btn {
+            width: 100%;
+            padding: 16px;
+            border: 2px dashed var(--border);
+            background: transparent;
+            border-radius: var(--radius);
+            color: var(--muted);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-bottom: 24px;
+        }
+
+        .add-q-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .exams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .exam-tile {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .exam-tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+        }
+
+        .exam-tile:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .exam-tile-title {
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin-bottom: 8px;
+        }
+
+        .exam-meta {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .meta-chip {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 0.77rem;
+            color: var(--muted);
+        }
+
+        .code-badge {
+            font-family: 'Space Mono', monospace;
+            background: rgba(247, 129, 102, 0.1);
+            border: 1px solid rgba(247, 129, 102, 0.3);
+            color: var(--accent);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 1.1rem;
+            letter-spacing: 3px;
+            text-align: center;
+            margin: 12px 0;
+        }
+
+        .tile-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .results-table th {
+            color: var(--muted);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .results-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .score-pill {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .score-a {
+            background: rgba(86, 211, 100, 0.15);
+            color: var(--accent3);
+        }
+
+        .score-b {
+            background: rgba(121, 192, 255, 0.15);
+            color: var(--accent2);
+        }
+
+        .score-c {
+            background: rgba(227, 179, 65, 0.15);
+            color: var(--accent4);
+        }
+
+        .score-d {
+            background: rgba(248, 81, 73, 0.15);
+            color: var(--danger);
+        }
+
+        /* STUDENT */
+        #student-view {
+            display: none;
+        }
+
+        .login-box {
+            max-width: 400px;
+            margin: 80px auto;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .login-box h2 {
+            font-size: 1.4rem;
+            margin-bottom: 6px;
+        }
+
+        .login-box p {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 28px;
+        }
+
+        .exam-taking {
+            display: none;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .exam-progress {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .progress-bar-wrap {
+            flex: 1;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+
+        .timer-display {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.1rem;
+            color: var(--accent);
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .timer-display.warning {
+            color: var(--danger);
+            animation: pulse 1s infinite;
+        }
+
+        .student-q-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            margin-bottom: 16px;
+        }
+
+        .student-q-text {
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .answer-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+            margin-bottom: 10px;
+        }
+
+        .answer-option:hover {
+            border-color: var(--accent2);
+            background: rgba(121, 192, 255, 0.05);
+        }
+
+        .answer-option.selected {
+            border-color: var(--accent2);
+            background: rgba(121, 192, 255, 0.1);
+        }
+
+        .answer-option.correct {
+            border-color: var(--accent3);
+            background: rgba(86, 211, 100, 0.1);
+        }
+
+        .answer-option.wrong {
+            border-color: var(--danger);
+            background: rgba(248, 81, 73, 0.1);
+        }
+
+        .opt-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.82rem;
+            flex-shrink: 0;
+            transition: all 0.15s;
+        }
+
+        .answer-option.selected .opt-circle {
+            border-color: var(--accent2);
+            background: var(--accent2);
+            color: #0d1117;
+        }
+
+        .answer-option.correct .opt-circle {
+            border-color: var(--accent3);
+            background: var(--accent3);
+            color: #0d1117;
+        }
+
+        .answer-option.wrong .opt-circle {
+            border-color: var(--danger);
+            background: var(--danger);
+            color: white;
+        }
+
+        .result-screen {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .result-circle {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            margin: 0 auto 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Mono', monospace;
+            position: relative;
+        }
+
+        .result-circle::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: conic-gradient(var(--accent) var(--pct, 0%), var(--surface2) 0%);
+            z-index: -1;
+        }
+
+        .result-circle-inner {
+            width: 148px;
+            height: 148px;
+            background: var(--bg);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-score {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .result-max {
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        .result-grade {
+            font-size: 3rem;
+            margin-bottom: 8px;
+        }
+
+        .result-msg {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .result-sub {
+            color: var(--muted);
+            margin-bottom: 32px;
+        }
+
+        .result-breakdown {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 480px;
+            margin: 0 auto 36px;
+        }
+
+        .breakdown-stat {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 12px;
+        }
+
+        .breakdown-val {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+
+        .breakdown-label {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .q-nav {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .q-nav-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+
+        .q-nav-btn.answered {
+            background: rgba(121, 192, 255, 0.1);
+            border-color: var(--accent2);
+            color: var(--accent2);
+        }
+
+        .q-nav-btn.current {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #0d1117;
+        }
+
+        /* ANIMATIONS */
+        @keyframes fadeDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .fade-in {
+            animation: fadeUp 0.4s ease both;
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 20px;
+            font-size: 0.9rem;
+            z-index: 999;
+            transform: translateY(80px);
+            opacity: 0;
+            transition: all 0.3s;
+            max-width: 320px;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-color: var(--accent3);
+        }
+
+        .toast.error {
+            border-color: var(--danger);
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 28px 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+        }
+
+        .empty-state .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            font-size: 0.9rem;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 480px;
+            width: 90%;
+            animation: fadeUp 0.25s ease;
+        }
+
+        .modal h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .role-cards {
+                flex-direction: column;
+            }
+
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .result-breakdown {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .builder-header {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+</head>
+
+<body>
+
+    <div id="splash">
+        <div class="grid-bg"></div>
+        <div class="splash-glow"></div>
+        <div class="splash-logo">MathExam<span style="color:var(--accent)">12</span></div>
+        <p class="splash-sub">Hệ thống kiểm tra Toán lớp 12</p>
+        <div class="role-cards">
+            <div class="role-card" onclick="enterTeacher()">
+                <div class="role-icon">👨‍🏫</div>
+                <div class="role-title">Giáo viên</div>
+                <div class="role-desc">Tạo đề kiểm tra, quản lý câu hỏi &amp; xem kết quả học sinh</div>
+            </div>
+            <div class="role-card" onclick="enterStudent()">
+                <div class="role-icon">🎓</div>
+                <div class="role-title">Học sinh</div>
+                <div class="role-desc">Nhập mã đề, làm bài kiểm tra và xem kết quả ngay sau khi nộp</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app">
+        <div class="topbar">
+            <div class="topbar-logo">MathExam12</div>
+            <div class="topbar-right">
+                <span class="badge" id="role-badge">—</span>
+                <button class="btn btn-ghost btn-sm" onclick="goHome()">← Trang chủ</button>
+            </div>
+        </div>
+
+        <!-- TEACHER -->
+        <div id="teacher-view">
+            <div class="main">
+                <div class="tabs">
+                    <button class="tab active" onclick="showTeacherTab('create')">✏️ Tạo đề</button>
+                    <button class="tab" onclick="showTeacherTab('exams')">📋 Đề thi</button>
+                    <button class="tab" onclick="showTeacherTab('results')">📊 Kết quả</button>
+                </div>
+
+                <div id="tab-create">
+                    <div class="section-title"><span>✏️</span> Tạo đề kiểm tra mới</div>
+                    <div class="builder-header">
+                        <div class="form-group" style="flex:2">
+                            <label>Tên đề kiểm tra</label>
+                            <input type="text" id="exam-title" placeholder="VD: Kiểm tra Chương 1 — Hàm số">
+                        </div>
+                        <div class="form-group">
+                            <label>Thời gian (phút)</label>
+                            <input type="number" id="exam-time" value="45" min="5" max="180">
+                        </div>
+                        <div class="form-group">
+                            <label>Chủ đề</label>
+                            <select id="exam-topic">
+                                <option>Hàm số &amp; Đồ thị</option>
+                                <option>Mũ &amp; Logarithm</option>
+                                <option>Lượng giác</option>
+                                <option>Tích phân</option>
+                                <option>Nguyên hàm</option>
+                                <option>Số phức</option>
+                                <option>Hình học không gian</option>
+                                <option>Tổ hợp &amp; Xác suất</option>
+                                <option>Tổng hợp</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="questions-list"></div>
+                    <div style="display:flex; gap:12px; margin-bottom: 24px;">
+                        <button class="add-q-btn" onclick="addQuestion()" style="flex:1; margin-bottom:0;">+ Thêm câu
+                            hỏi thủ công</button>
+                        <button class="add-q-btn" onclick="openImportModal()"
+                            style="flex:1; margin-bottom:0; background:rgba(121,192,255,0.05); border-color:var(--accent2); color:var(--accent2);">📄
+                            Nhập tự động từ Word / TXT</button>
+                    </div>
+                    <div style="display:flex; gap:12px; justify-content:flex-end">
+                        <button class="btn btn-secondary" onclick="clearBuilder()">Xóa tất cả</button>
+                        <button class="btn btn-primary" onclick="saveExam()">💾 Lưu đề kiểm tra</button>
+                    </div>
+                </div>
+
+                <div id="tab-exams" style="display:none">
+                    <div class="section-title"><span>📋</span> Danh sách đề thi</div>
+                    <div id="exams-grid" class="exams-grid"></div>
+                </div>
+
+                <div id="tab-results" style="display:none">
+                    <div class="section-title"><span>📊</span> Kết quả học sinh</div>
+                    <div id="results-wrap"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STUDENT -->
+        <div id="student-view">
+            <div class="main">
+                <div id="student-login">
+                    <div class="login-box fade-in">
+                        <div style="font-size:2.5rem; margin-bottom:16px">🎓</div>
+                        <h2>Bắt đầu làm bài</h2>
+                        <p>Nhập thông tin để vào phòng thi</p>
+                        <div class="form-group" style="text-align:left; margin-bottom:14px">
+                            <label>Họ và tên</label>
+                            <input type="text" id="student-name" placeholder="Nguyễn Văn A">
+                        </div>
+                        <div class="form-group" style="text-align:left; margin-bottom:24px">
+                            <label>Mã đề thi (6 ký tự)</label>
+                            <input type="text" id="exam-code" placeholder="TOAN01" maxlength="6"
+                                style="text-transform:uppercase; letter-spacing:4px; font-family:'Space Mono',monospace; font-size:1.2rem"
+                                oninput="this.value=this.value.toUpperCase()">
+                        </div>
+                        <button class="btn btn-primary" style="width:100%; padding:12px" onclick="joinExam()">Vào phòng
+                            thi →</button>
+                        <p style="margin-top:16px; font-size:0.8rem; color:var(--muted)">Thử với mã: <strong
+                                style="color:var(--accent); font-family:'Space Mono',monospace">TOAN01</strong></p>
+                    </div>
+                </div>
+
+                <div class="exam-taking" id="exam-taking">
+                    <div class="exam-progress">
+                        <div style="font-weight:700; white-space:nowrap" id="progress-text">Câu 0/0</div>
+                        <div class="progress-bar-wrap">
+                            <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+                        </div>
+                        <div class="timer-display" id="timer-display">45:00</div>
+                    </div>
+                    <div class="q-nav" id="q-nav"></div>
+                    <div id="student-questions"></div>
+                    <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px">
+                        <button class="btn btn-secondary" id="prev-btn" onclick="prevQ()" style="display:none">←
+                            Trước</button>
+                        <button class="btn btn-primary" id="next-btn" onclick="nextQ()">Tiếp →</button>
+                        <button class="btn btn-danger" id="submit-btn" onclick="submitExam()" style="display:none">✓ Nộp
+                            bài</button>
+                    </div>
+                </div>
+
+                <div class="result-screen" id="result-screen">
+                    <div class="result-circle" id="result-circle">
+                        <div class="result-circle-inner">
+                            <div class="result-score" id="res-score">0</div>
+                            <div class="result-max">/10</div>
+                        </div>
+                    </div>
+                    <div class="result-grade" id="res-grade">🏆</div>
+                    <div class="result-msg" id="res-msg">Xuất sắc!</div>
+                    <div class="result-sub" id="res-sub">Chúc mừng bạn đã hoàn thành bài kiểm tra</div>
+                    <div class="result-breakdown">
+                        <div class="breakdown-stat">
+                            <div class="breakdown-val" id="res-correct" style="color:var(--accent3)">0</div>
+                            <div class="breakdown-label">Câu đúng</div>
+                        </div>
+                        <div class="breakdown-stat">
+                            <div class="breakdown-val" id="res-wrong" style="color:var(--danger)">0</div>
+                            <div class="breakdown-label">Câu sai</div>
+                        </div>
+                        <div class="breakdown-stat">
+                            <div class="breakdown-val" id="res-time" style="color:var(--muted)">0</div>
+                            <div class="breakdown-label">Phút làm bài</div>
+                        </div>
+                    </div>
+                    <div id="review-section"></div>
+                    <button class="btn btn-secondary" onclick="restartStudent()" style="margin-top:16px">← Làm đề hoặc
+                        học sinh khác</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal">
+            <h3>⚠️ Xác nhận nộp bài</h3>
+            <p style="color:var(--muted); margin-bottom:20px" id="confirm-msg">Bạn có chắc muốn nộp bài?</p>
+            <div style="display:flex; gap:12px; justify-content:flex-end">
+                <button class="btn btn-secondary" onclick="closeModal()">Quay lại</button>
+                <button class="btn btn-danger" onclick="confirmSubmit()">Nộp bài</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="import-modal">
+        <div class="modal" style="max-width: 650px;">
+            <h3>📄 Tự động thêm từ File</h3>
+            <p style="color:var(--muted); margin-bottom:12px; font-size: 0.9rem;">Hệ thống sẽ thử trích xuất câu hỏi từ
+                văn bản. Tải file <strong style="color:var(--accent2)">.docx (Word)</strong> hoặc <strong
+                    style="color:var(--accent2)">.txt</strong> lên.</p>
+            <div style="margin-bottom: 20px;">
+                <input type="file" id="import-file" accept=".docx,.txt" style="background:var(--surface2)">
+            </div>
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label>Văn bản sau khi phân tích (Bạn có thể tự sửa bằng tay lại nếu nhận diện sai)</label>
+                <textarea id="import-text" rows="8"
+                    placeholder="Kết quả trích xuất chữ sẽ xuất hiện ở đây...&#10;&#10;Mẹo nhận diện: Đảm bảo có cấu trúc kiểu như:&#10;Câu 1: Thủ đô nước ta là?&#10;A. Hà Nội&#10;B. Đà Nẵng..."
+                    style="resize: vertical; font-size: 0.85rem; line-height: 1.5; font-family: monospace;"></textarea>
+            </div>
+            <div style="display:flex; gap:12px; justify-content:flex-end">
+                <button class="btn btn-secondary" onclick="closeImportModal()">Hủy</button>
+                <button class="btn btn-primary" onclick="processImportText()">Bóc tách & Thêm câu hỏi</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- FIREBASE SDK MIỄN PHÍ DÀNH CHO BACKEND (REALTIME DATABASE) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <script>
+        // ---------- CẤU HÌNH BACKEND ĐÁM MÂY (FIREBASE) ----------
+        // Bạn cần tạo tài khoản Firebase (Miễn phí) tại console.firebase.google.com
+        // Tạo một Project -> Add Web App -> Dán đoạn config vào khối rỗng bên dưới:
+        const firebaseConfig = {
+            apiKey: "AIzaSyBcrXORpDEvgndefG92I1fNDYn3_0WPdV0",
+            authDomain: "exammath12.firebaseapp.com",
+            databaseURL: "https://exammath12-default-rtdb.firebaseio.com",
+            projectId: "exammath12",
+            storageBucket: "exammath12.firebasestorage.app",
+            messagingSenderId: "53200240180",
+            appId: "1:53200240180:web:b5024b0c2159e2b4e6d461",
+            measurementId: "G-GE5F5QWJSX"
+        };
+
+        let db;
+        let isFirebaseSetup = false;
+        let exams = [];
+        let results = [];
+
+        try {
+            // Kiểm tra nếu người dùng đã thay key thật
+            if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.database();
+                isFirebaseSetup = true;
+
+                // Đồng bộ thời gian thực toàn cầu
+                db.ref('exams').on('value', (snap) => {
+                    exams = snap.val() || [];
+                    if (document.getElementById('tab-exams').style.display === 'block') renderExamsList();
+                });
+                db.ref('results').on('value', (snap) => {
+                    results = snap.val() || [];
+                    if (document.getElementById('tab-results').style.display === 'block') renderResults();
+                });
+            } else {
+                // Chạy Offline dự phòng nếu chưa có Firebase (lưu trên máy cục bộ)
+                exams = JSON.parse(localStorage.getItem('me12_exams') || '[]');
+                results = JSON.parse(localStorage.getItem('me12_results') || '[]');
+                console.warn("Chưa gắn Firebase Key. Lịch sử thi sẽ chỉ lưu ở trên máy tính này.");
+            }
+        } catch (e) { console.error("Lỗi Firebase:", e); }
+
+        // Tạo dữ liệu mồi nếu mới mở web lần đầu (Trống hoàn toàn)
+        if (!isFirebaseSetup && exams.length === 0) {
+            exams = [{
+                id: 'sample1', code: 'TOAN01',
+                title: 'Kiểm tra Hàm số — Chương 1',
+                topic: 'Hàm số & Đồ thị', time: 20,
+                createdAt: new Date().toISOString(),
+                questions: [
+                    { text: 'Hàm số y = x³ - 3x² + 1 đạt cực đại tại điểm nào?', options: ['x = 0', 'x = 1', 'x = 2', 'x = -1'], correct: 0 },
+                    { text: 'Hàm số y = (x-1)/(x+2) có tiệm cận đứng là:', options: ['x = 1', 'x = -2', 'x = 2', 'y = 1'], correct: 1 },
+                    { text: 'Đạo hàm của hàm số f(x) = sin(2x) là:', options: ['cos(2x)', '2cos(2x)', '-2cos(2x)', '2sin(2x)'], correct: 1 },
+                    { text: 'Hàm số y = x⁴ - 4x² + 3 có bao nhiêu điểm cực trị?', options: ['1', '2', '3', '4'], correct: 2 },
+                    { text: 'Tập xác định của hàm số y = √(2x - 4) là:', options: ['[2, +∞)', '(2, +∞)', '(-∞, 2]', 'ℝ'], correct: 0 }
+                ]
+            }];
+            saveData();
+        }
+
+        function saveData() {
+            if (isFirebaseSetup) {
+                db.ref('exams').set(exams);
+                db.ref('results').set(results);
+            } else {
+                localStorage.setItem('me12_exams', JSON.stringify(exams));
+                localStorage.setItem('me12_results', JSON.stringify(results));
+            }
+        }
+
+        // NAV
+        function enterTeacher() {
+            document.getElementById('splash').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            document.getElementById('teacher-view').style.display = 'block';
+            document.getElementById('student-view').style.display = 'none';
+            document.getElementById('role-badge').textContent = '👨‍🏫 Giáo viên';
+            renderQList();
+        }
+        function enterStudent() {
+            document.getElementById('splash').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            document.getElementById('teacher-view').style.display = 'none';
+            document.getElementById('student-view').style.display = 'block';
+            document.getElementById('role-badge').textContent = '🎓 Học sinh';
+        }
+        function goHome() {
+            clearTimer();
+            document.getElementById('splash').style.display = 'flex';
+            document.getElementById('app').style.display = 'none';
+            document.getElementById('teacher-view').style.display = 'none';
+            document.getElementById('student-view').style.display = 'none';
+            document.getElementById('student-login').style.display = 'block';
+            document.getElementById('exam-taking').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'none';
+        }
+
+        // TEACHER TABS
+        function showTeacherTab(tab) {
+            ['create', 'exams', 'results'].forEach(t => {
+                document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
+            });
+            document.querySelectorAll('.tab').forEach((el, i) => {
+                el.classList.toggle('active', ['create', 'exams', 'results'][i] === tab);
+            });
+            if (tab === 'exams') renderExamsList();
+            if (tab === 'results') renderResults();
+        }
+
+        // IMPORT / PARSE LOGIC
+        function openImportModal() {
+            document.getElementById('import-text').value = '';
+            document.getElementById('import-file').value = '';
+            document.getElementById('import-modal').classList.add('open');
+        }
+        function closeImportModal() { document.getElementById('import-modal').classList.remove('open'); }
+
+        document.getElementById('import-file').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+
+            if (file.name.endsWith('.txt')) {
+                reader.onload = function (e) { document.getElementById('import-text').value = e.target.result; };
+                reader.readAsText(file);
+            } else if (file.name.endsWith('.docx')) {
+                reader.onload = function (e) {
+                    mammoth.extractRawText({ arrayBuffer: e.target.result })
+                        .then(function (result) {
+                            document.getElementById('import-text').value = result.value.trim();
+                        })
+                        .catch(function (err) {
+                            showToast('Lỗi khi đọc file Word. Hãy thử dạng text!', 'error');
+                        });
+                };
+                reader.readAsArrayBuffer(file);
+            } else {
+                showToast('Hệ thống hiện tại chỉ hỗ trợ file .docx hoặc .txt', 'error');
+            }
+        });
+
+        function processImportText() {
+            const text = document.getElementById('import-text').value;
+            if (!text.trim()) { showToast('Không có dữ liệu văn bản', 'error'); return; }
+
+            const qRegex = /(?:Câu|Bài)\s*\d+[\.:]?\s*(.*?)(?=(?:Câu|Bài)\s*\d+[\.:]?|$)/gis;
+            let matches;
+            let addedCount = 0;
+
+            while ((matches = qRegex.exec(text)) !== null) {
+                let rawBlock = matches[1].trim();
+                const optRegex = /([A-D])[\.:\)]\s*([^\n]+)/gis;
+                let ops = [];
+                let opMatch;
+
+                let questionTextStr = rawBlock;
+                let firstOptIdx = -1;
+
+                while ((opMatch = optRegex.exec(rawBlock)) !== null) {
+                    if (firstOptIdx === -1) firstOptIdx = opMatch.index;
+                    ops.push(opMatch[2].trim());
+                }
+
+                if (ops.length >= 2) {
+                    if (firstOptIdx !== -1) questionTextStr = rawBlock.substring(0, firstOptIdx).trim();
+                    let finalOpts = ['', '', '', ''];
+                    for (let i = 0; i < 4 && i < ops.length; i++) finalOpts[i] = ops[i];
+
+                    builderQuestions.push({ type: 'multiple_choice', text: questionTextStr, options: finalOpts, correct: 0 });
+                    addedCount++;
+                } else {
+                    builderQuestions.push({ type: 'fill_blank', text: questionTextStr, options: [], correct: '' });
+                    addedCount++;
+                }
+            }
+
+            if (addedCount > 0) {
+                showToast(`Đã nhận diện và trích xuất thành công ${addedCount} câu hỏi!`, 'success');
+                renderQList();
+                closeImportModal();
+            } else {
+                showToast('Lỗi: Cấu trúc không khớp. Hãy đảm bảo nội dung có từ khóa "Câu 1:" và các đáp án "A.", "B."...', 'error');
+            }
+        }
+
+        // BUILDER
+        let builderQuestions = [];
+        function renderQList() {
+            const c = document.getElementById('questions-list');
+            if (!builderQuestions.length) {
+                c.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><p>Chưa có câu hỏi nào. Nhấn "+ Thêm câu hỏi" để bắt đầu.</p></div>';
+                return;
+            }
+            c.innerHTML = builderQuestions.map((q, i) => {
+                q.type = q.type || 'multiple_choice';
+                let optionsHtml = '';
+                if (q.type === 'multiple_choice') {
+                    optionsHtml = `
+        <div class="options-grid">
+          ${['A', 'B', 'C', 'D'].map((lbl, j) => `
+            <div class="option-row">
+              <div class="option-label ${q.correct === j ? 'correct' : ''}" onclick="setCorrect(${i},${j})" title="Chọn đáp án đúng">${lbl}</div>
+              <input type="text" value="${(q.options && q.options[j] ? q.options[j] : '').replace(/"/g, '&quot;')}" placeholder="Đáp án ${lbl}" oninput="builderQuestions[${i}].options[${j}]=this.value">
+            </div>`).join('')}
+        </div>
+        <p style="font-size:0.78rem;color:var(--muted);margin-top:10px">👆 Click chữ cái để chọn đáp án đúng — Hiện tại: <strong style="color:var(--accent3)">${['A', 'B', 'C', 'D'][q.correct]}</strong></p>
+      `;
+                } else if (q.type === 'true_false') {
+                    optionsHtml = `
+        <div style="display:flex; gap:16px; margin-top:14px;">
+          <div class="answer-option ${q.correct === 0 ? 'correct' : ''}" style="flex:1; margin:0; border-color:${q.correct === 0 ? 'var(--accent3)' : 'var(--border)'};" onclick="setCorrect(${i},0)">
+            <div class="opt-circle" style="width:24px;height:24px;font-size:0.7rem; ${q.correct === 0 ? 'background:var(--accent3);color:#0d1117' : ''}">✓</div> <span style="font-weight:600; color:var(--text); font-size:1rem;">Đúng</span>
+          </div>
+          <div class="answer-option ${q.correct === 1 ? 'correct' : ''}" style="flex:1; margin:0; border-color:${q.correct === 1 ? 'var(--danger)' : 'var(--border)'};" onclick="setCorrect(${i},1)">
+            <div class="opt-circle" style="width:24px;height:24px;font-size:0.7rem; ${q.correct === 1 ? 'background:var(--danger);color:#fff' : ''}">✗</div> <span style="font-weight:600; color:var(--text); font-size:1rem;">Sai</span>
+          </div>
+        </div>
+        <p style="font-size:0.78rem;color:var(--muted);margin-top:10px">👆 Click để chọn đáp án đúng cho câu hỏi</p>
+      `;
+                } else if (q.type === 'fill_blank') {
+                    optionsHtml = `
+        <div style="margin-top:14px;">
+          <label style="font-size:0.82rem; color:var(--muted); font-weight:600;">Đáp án đúng:</label>
+          <input type="text" value="${(q.correct || '').toString().replace(/"/g, '&quot;')}" placeholder="Nhập đáp án chính xác..." oninput="builderQuestions[${i}].correct=this.value" style="margin-top:6px; background: rgba(86,211,100,0.1); border-color: var(--accent3); color: var(--accent3); font-weight:bold;">
+        </div>
+        <p style="font-size:0.78rem;color:var(--muted);margin-top:10px">💡 Học sinh sẽ phải nhập chính xác đoạn text này (không phân biệt hoa/thường).</p>
+      `;
+                }
+
+                return `
+      <div class="question-card fade-in">
+        <div class="q-header">
+          <div class="q-num">${i + 1}</div>
+          <div class="q-content" style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:0.8rem; color:var(--muted); font-weight:600;">DẠNG CÂU HỎI</span>
+              <select onchange="changeQType(${i}, this.value)" style="width: auto; padding: 4px 8px; font-size: 0.8rem; background: var(--surface2);">
+                <option value="multiple_choice" ${q.type === 'multiple_choice' ? 'selected' : ''}>Trắc nghiệm 4 đáp án</option>
+                <option value="true_false" ${q.type === 'true_false' ? 'selected' : ''}>Đúng / Sai</option>
+                <option value="fill_blank" ${q.type === 'fill_blank' ? 'selected' : ''}>Điền đáp án</option>
+              </select>
+            </div>
+            <input type="text" value="${q.text.replace(/"/g, '&quot;')}" placeholder="Nhập nội dung câu hỏi..." oninput="builderQuestions[${i}].text=this.value" style="font-weight:600">
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="removeQuestion(${i})" style="height:fit-content">🗑</button>
+        </div>
+        ${optionsHtml}
+      </div>`;
+            }).join('');
+        }
+        function addQuestion() { builderQuestions.push({ type: 'multiple_choice', text: '', options: ['', '', '', ''], correct: 0 }); renderQList(); }
+        function removeQuestion(i) { builderQuestions.splice(i, 1); renderQList(); }
+        function setCorrect(qi, ai) { builderQuestions[qi].correct = ai; renderQList(); }
+        function changeQType(i, type) {
+            builderQuestions[i].type = type;
+            if (type === 'multiple_choice') {
+                builderQuestions[i].options = ['', '', '', ''];
+                builderQuestions[i].correct = 0;
+            } else if (type === 'true_false') {
+                builderQuestions[i].options = ['Đúng', 'Sai'];
+                builderQuestions[i].correct = 0;
+            } else if (type === 'fill_blank') {
+                builderQuestions[i].options = [];
+                builderQuestions[i].correct = '';
+            }
+            renderQList();
+        }
+        function clearBuilder() { builderQuestions = []; document.getElementById('exam-title').value = ''; renderQList(); }
+        function generateCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+        }
+        function saveExam() {
+            const title = document.getElementById('exam-title').value.trim();
+            const time = parseInt(document.getElementById('exam-time').value);
+            const topic = document.getElementById('exam-topic').value;
+            if (!title) { showToast('Vui lòng nhập tên đề kiểm tra', 'error'); return; }
+            if (builderQuestions.length < 2) { showToast('Cần ít nhất 2 câu hỏi', 'error'); return; }
+            if (builderQuestions.some(q => {
+                if (!q.text.trim()) return true;
+                if (q.type === 'multiple_choice' && (!q.options || q.options.some(o => !o.trim()))) return true;
+                if (q.type === 'fill_blank' && (q.correct === null || q.correct === undefined || q.correct.toString().trim() === '')) return true;
+                return false;
+            })) { showToast('Vui lòng điền đầy đủ câu hỏi và đáp án', 'error'); return; }
+            const exam = { id: Date.now().toString(), code: generateCode(), title, topic, time, createdAt: new Date().toISOString(), questions: JSON.parse(JSON.stringify(builderQuestions)) };
+            exams.push(exam); saveData(); clearBuilder();
+            showToast('✅ Đã lưu đề kiểm tra!', 'success');
+            showTeacherTab('exams');
+        }
+
+        // EXAMS LIST
+        function renderExamsList() {
+            const g = document.getElementById('exams-grid');
+            if (!exams.length) { g.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>Chưa có đề thi nào.</p></div>'; return; }
+            g.innerHTML = exams.map(e => {
+                const r = results.filter(x => x.examId === e.id);
+                return `<div class="exam-tile fade-in">
+      <div class="exam-tile-title">${e.title}</div>
+      <div class="exam-meta">
+        <span class="meta-chip">📚 ${e.topic}</span>
+        <span class="meta-chip">⏱ ${e.time} phút</span>
+        <span class="meta-chip">❓ ${e.questions.length} câu</span>
+        <span class="meta-chip">👥 ${r.length} lượt</span>
+      </div>
+      <div class="code-badge">${e.code}</div>
+      <div style="font-size:0.78rem;color:var(--muted);text-align:center;margin-bottom:8px">Mã truy cập học sinh</div>
+      <div class="tile-actions">
+        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="copyCode('${e.code}')">📋 Copy Mã 6 chữ số</button>
+        <button class="btn btn-ghost btn-sm" onclick="deleteExam('${e.id}')">🗑</button>
+      </div>
+    </div>`;
+            }).join('');
+        }
+        function copyCode(code) { navigator.clipboard.writeText(code).then(() => showToast('Đã copy mã: ' + code, 'success')); }
+        function deleteExam(id) {
+            if (!confirm('Xóa đề thi này?')) return;
+            exams = exams.filter(e => e.id !== id); saveData(); renderExamsList();
+        }
+
+        // RESULTS
+        function renderResults() {
+            const wrap = document.getElementById('results-wrap');
+            if (!results.length) { wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><p>Chưa có kết quả nào.</p></div>'; return; }
+            const byExam = {};
+            results.forEach(r => { if (!byExam[r.examId]) byExam[r.examId] = []; byExam[r.examId].push(r); });
+            wrap.innerHTML = Object.entries(byExam).map(([eid, rs]) => {
+                const exam = exams.find(e => e.id === eid);
+                const name = exam ? exam.title : 'Đề #' + eid;
+                const avg = (rs.reduce((s, r) => s + r.score, 0) / rs.length).toFixed(1);
+                return `<div style="margin-bottom:32px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <strong>${name}</strong>
+        <span style="color:var(--muted);font-size:0.85rem">Điểm TB: <strong style="color:var(--accent)">${avg}</strong></span>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+        <table class="results-table">
+          <thead><tr><th>Học sinh</th><th>Điểm</th><th>Đúng/Tổng</th><th>Thời gian</th><th>Xếp loại</th></tr></thead>
+          <tbody>${rs.sort((a, b) => b.score - a.score).map(r => {
+                    const cls = r.score >= 9 ? 'score-a' : r.score >= 7 ? 'score-b' : r.score >= 5 ? 'score-c' : 'score-d';
+                    const grade = r.score >= 9 ? 'Xuất sắc' : r.score >= 7 ? 'Khá' : r.score >= 5 ? 'Trung bình' : 'Yếu';
+                    return `<tr><td><strong>${r.studentName}</strong></td><td><span class="score-pill ${cls}">${r.score.toFixed(1)}</span></td><td>${r.correct}/${r.total}</td><td>${r.timeTaken} phút</td><td>${grade}</td></tr>`;
+                }).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+            }).join('');
+        }
+
+        // STUDENT EXAM
+        let currentExam = null, currentStudent = '', studentAnswers = [], currentQ = 0;
+        let timerInterval = null, timeLeft = 0, startTime = null;
+
+        function joinExam() {
+            const name = document.getElementById('student-name').value.trim();
+            const code = document.getElementById('exam-code').value.trim().toUpperCase();
+            if (!name) { showToast('Vui lòng nhập họ tên', 'error'); return; }
+            if (code.length !== 6) { showToast('Mã đề thi phải là 6 ký tự', 'error'); return; }
+
+            if (!isFirebaseSetup) showToast('Cảnh báo: Đang chạy chế độ Offline cục bộ.', 'success');
+
+            const exam = exams.find(e => e.code === code);
+
+            if (!exam) { showToast('Không tìm thấy đề thi với mã này. (Bạn đã kết nối Server chưa?)', 'error'); return; }
+            currentExam = exam; currentStudent = name;
+            studentAnswers = new Array(exam.questions.length).fill(null);
+            currentQ = 0; timeLeft = exam.time * 60; startTime = Date.now();
+            document.getElementById('student-login').style.display = 'none';
+            document.getElementById('exam-taking').style.display = 'block';
+            renderStudentExam(); startTimer();
+        }
+
+        function renderStudentExam() {
+            const q = currentExam.questions[currentQ], total = currentExam.questions.length;
+            const answered = studentAnswers.filter(a => a !== null).length;
+            document.getElementById('progress-text').textContent = `Câu ${currentQ + 1}/${total}`;
+            document.getElementById('progress-bar').style.width = ((answered / total) * 100) + '%';
+            document.getElementById('q-nav').innerHTML = currentExam.questions.map((_, i) => {
+                let cls = 'q-nav-btn';
+                if (i === currentQ) cls += ' current';
+                else if (studentAnswers[i] !== null) cls += ' answered';
+                return `<button class="${cls}" onclick="jumpToQ(${i})">${i + 1}</button>`;
+            }).join('');
+            q.type = q.type || 'multiple_choice';
+            let studentInputHtml = '';
+
+            if (q.type === 'multiple_choice') {
+                studentInputHtml = ['A', 'B', 'C', 'D'].map((lbl, i) => `
+      <div class="answer-option ${studentAnswers[currentQ] === i ? 'selected' : ''}" onclick="selectAnswer(${i})">
+        <div class="opt-circle">${lbl}</div>
+        <span>${q.options[i]}</span>
+      </div>`).join('');
+            } else if (q.type === 'true_false') {
+                studentInputHtml = `
+      <div style="display:flex; gap:16px;">
+        <div class="answer-option ${studentAnswers[currentQ] === 0 ? 'selected' : ''}" style="flex:1; border-color:${studentAnswers[currentQ] === 0 ? 'var(--accent2)' : 'var(--border)'}" onclick="selectAnswer(0)">
+          <div class="opt-circle" style="width:24px;height:24px;font-size:0.7rem;">✓</div> <span style="font-weight:600">Đúng</span>
+        </div>
+        <div class="answer-option ${studentAnswers[currentQ] === 1 ? 'selected' : ''}" style="flex:1; border-color:${studentAnswers[currentQ] === 1 ? 'var(--accent2)' : 'var(--border)'}" onclick="selectAnswer(1)">
+          <div class="opt-circle" style="width:24px;height:24px;font-size:0.7rem;">✗</div> <span style="font-weight:600">Sai</span>
+        </div>
+      </div>`;
+            } else if (q.type === 'fill_blank') {
+                studentInputHtml = `
+      <div style="margin-top:16px;">
+        <input type="text" value="${(studentAnswers[currentQ] || '').replace(/"/g, '&quot;')}" placeholder="Nhập đáp án của bạn..." oninput="selectAnswer(this.value)" style="font-size: 1.1rem; padding: 14px; text-align: center; border-width: 2px;">
+      </div>`;
+            }
+
+            document.getElementById('student-questions').innerHTML = `
+    <div class="student-q-card fade-in">
+      <div style="font-size:0.8rem;color:var(--muted);margin-bottom:10px;font-weight:600">CÂU ${currentQ + 1} / ${total} ${q.type === 'true_false' ? '— CHỌN ĐÚNG/SAI' : q.type === 'fill_blank' ? '— ĐIỀN ĐÁP ÁN' : ''}</div>
+      <div class="student-q-text">${q.text}</div>
+      ${studentInputHtml}
+    </div>`;
+            document.getElementById('prev-btn').style.display = currentQ > 0 ? 'inline-block' : 'none';
+            document.getElementById('next-btn').style.display = currentQ < total - 1 ? 'inline-block' : 'none';
+            document.getElementById('submit-btn').style.display = currentQ === total - 1 ? 'inline-block' : 'none';
+        }
+
+        function selectAnswer(ai) { studentAnswers[currentQ] = ai; renderStudentExam(); }
+        function nextQ() { if (currentQ < currentExam.questions.length - 1) { currentQ++; renderStudentExam(); } }
+        function prevQ() { if (currentQ > 0) { currentQ--; renderStudentExam(); } }
+        function jumpToQ(i) { currentQ = i; renderStudentExam(); }
+
+        function submitExam() {
+            const u = studentAnswers.filter(a => a === null).length;
+            if (u > 0) {
+                document.getElementById('confirm-msg').textContent = `Bạn còn ${u} câu chưa trả lời. Bạn có chắc muốn nộp bài không?`;
+                document.getElementById('confirm-modal').classList.add('open');
+            } else confirmSubmit();
+        }
+        function confirmSubmit() {
+            closeModal(); clearTimer();
+            const timeTaken = Math.max(1, Math.round((Date.now() - startTime) / 60000));
+            let correct = 0;
+            currentExam.questions.forEach((q, i) => {
+                let ans = studentAnswers[i];
+                let qType = q.type || 'multiple_choice';
+                if (qType === 'multiple_choice' || qType === 'true_false') {
+                    if (ans === q.correct) correct++;
+                } else if (qType === 'fill_blank') {
+                    if (ans && ans.toString().trim().toLowerCase() === q.correct.toString().trim().toLowerCase()) correct++;
+                }
+            });
+            const total = currentExam.questions.length;
+            const score = (correct / total) * 10;
+            results.push({ examId: currentExam.id, studentName: currentStudent, score, correct, total, timeTaken, answers: [...studentAnswers], submittedAt: new Date().toISOString() });
+            saveData();
+            showResultScreen(score, correct, total, timeTaken);
+        }
+
+        function showResultScreen(score, correct, total, timeTaken) {
+            document.getElementById('exam-taking').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            const pct = Math.round((score / 10) * 100);
+            document.getElementById('result-circle').style.setProperty('--pct', pct + '%');
+            document.getElementById('res-score').textContent = score.toFixed(1);
+            document.getElementById('res-correct').textContent = correct;
+            document.getElementById('res-wrong').textContent = total - correct;
+            document.getElementById('res-time').textContent = timeTaken;
+            let grade, msg, sub;
+            if (score >= 9) { grade = '🏆'; msg = 'Xuất sắc!'; sub = 'Bạn làm rất tốt. Tiếp tục phát huy nhé!'; }
+            else if (score >= 8) { grade = '⭐'; msg = 'Giỏi!'; sub = 'Kết quả rất tốt. Còn một chút nữa là hoàn hảo!'; }
+            else if (score >= 7) { grade = '👍'; msg = 'Khá!'; sub = 'Kết quả khá tốt. Cố gắng thêm một chút nhé!'; }
+            else if (score >= 5) { grade = '📚'; msg = 'Trung bình'; sub = 'Bạn cần ôn luyện thêm phần này.'; }
+            else { grade = '💪'; msg = 'Cần cố gắng thêm'; sub = 'Đừng nản lòng, hãy ôn tập và thử lại!'; }
+            document.getElementById('res-grade').textContent = grade;
+            document.getElementById('res-msg').textContent = msg;
+            document.getElementById('res-sub').textContent = sub;
+            document.getElementById('review-section').innerHTML = `
+    <div style="text-align:left;max-width:700px;margin:0 auto">
+      <div class="divider"></div>
+      <div style="font-weight:700;margin-bottom:16px">🔍 Xem lại đáp án</div>
+      ${currentExam.questions.map((q, i) => {
+                const ua = studentAnswers[i];
+                let qType = q.type || 'multiple_choice';
+                let ok = false;
+                if (qType === 'multiple_choice' || qType === 'true_false') {
+                    ok = (ua === q.correct);
+                } else if (qType === 'fill_blank') {
+                    ok = (ua && ua.toString().trim().toLowerCase() === q.correct.toString().trim().toLowerCase());
+                }
+
+                return `<div style="background:var(--surface);border:1px solid ${ok ? 'rgba(86,211,100,0.3)' : 'rgba(248,81,73,0.3)'};border-radius:10px;padding:16px;margin-bottom:12px">
+          <div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">Câu ${i + 1} — ${ok ? '<span style="color:var(--accent3)">✓ Đúng</span>' : '<span style="color:var(--danger)">✗ Sai</span>'}</div>
+          <div style="font-weight:600;margin-bottom:10px">${q.text}</div>
+          ${(() => {
+                        if (qType === 'multiple_choice') {
+                            return ['A', 'B', 'C', 'D'].map((lbl, j) => {
+                                let st = 'color:var(--muted)', ic = '';
+                                if (j === q.correct) { st = 'color:var(--accent3);font-weight:700'; ic = ' ✓'; }
+                                if (j === ua && j !== q.correct) { st = 'color:var(--danger)'; ic = ' ✗'; }
+                                return `<div style="font-size:0.88rem;${st};padding:2px 0">${lbl}. ${q.options[j]}${ic}</div>`;
+                            }).join('');
+                        } else if (qType === 'true_false') {
+                            return ['Đúng', 'Sai'].map((lbl, j) => {
+                                let st = 'color:var(--muted)', ic = '';
+                                if (j === q.correct) { st = 'color:var(--accent3);font-weight:700'; ic = ' ✓'; }
+                                if (j === ua && j !== q.correct) { st = 'color:var(--danger)'; ic = ' ✗'; }
+                                return `<div style="font-size:0.88rem;${st};padding:2px 0">${lbl}${ic}</div>`;
+                            }).join('');
+                        } else if (qType === 'fill_blank') {
+                            return `
+                <div style="font-size:0.88rem;color:var(--muted);padding:2px 0">Đáp án của bạn: <strong style="color:${ok ? 'var(--accent3)' : 'var(--danger)'}">${ua || '(trống)'}</strong></div>
+                <div style="font-size:0.88rem;color:var(--accent3);font-weight:700;padding:2px 0">Đáp án đúng: ${q.correct}</div>
+              `;
+                        }
+                    })()}
+        </div>`;
+            }).join('')}
+    </div>`;
+        }
+
+        function restartStudent() {
+            currentExam = null;
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('student-login').style.display = 'block';
+            document.getElementById('student-name').value = '';
+            document.getElementById('exam-code').value = '';
+        }
+
+        // TIMER
+        function startTimer() {
+            clearTimer(); updateTimerDisplay();
+            timerInterval = setInterval(() => { timeLeft--; updateTimerDisplay(); if (timeLeft <= 0) { clearTimer(); showToast('⏰ Hết giờ! Bài đã được nộp tự động.', 'error'); confirmSubmit(); } }, 1000);
+        }
+        function updateTimerDisplay() {
+            const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+            const el = document.getElementById('timer-display');
+            if (!el) return;
+            el.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            el.classList.toggle('warning', timeLeft <= 120);
+        }
+        function clearTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
+
+        // TOAST
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('toast');
+            t.textContent = msg; t.className = `toast ${type} show`;
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+        function closeModal() { document.getElementById('confirm-modal').classList.remove('open'); }
+    </script>
+</body>
+
+</html>
