@@ -1573,11 +1573,23 @@
                 if (q.type === 'multiple_choice') {
                     optionsHtml = `
         <div class="options-grid">
-          ${['A', 'B', 'C', 'D'].map((lbl, j) => `
-            <div class="option-row">
-              <div class="option-label ${q.correct === j ? 'correct' : ''}" onclick="setCorrect(${i},${j})" title="Chọn đáp án đúng">${lbl}</div>
-              <input type="text" value="${(q.options && q.options[j] ? q.options[j] : '').replace(/"/g, '&quot;')}" placeholder="Đáp án ${lbl}" oninput="builderQuestions[${i}].options[${j}]=this.value">
-            </div>`).join('')}
+          ${['A', 'B', 'C', 'D'].map((lbl, j) => {
+              const optVal = q.options && q.options[j] ? q.options[j] : '';
+              const safeText = optVal.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+              return `
+            <div class="option-row" style="align-items: flex-start;">
+              <div class="option-label ${q.correct === j ? 'correct' : ''}" onclick="setCorrect(${i},${j})" title="Chọn đáp án đúng" style="margin-top: 8px;">${lbl}</div>
+              <div style="flex:1;">
+                <div id="q-${i}-opt-preview-${j}" style="font-size: 0.9rem; padding: 6px; border: 1px dashed var(--border); border-radius: 6px; margin-bottom: 4px; min-height: 24px; background: white; color: black; font-weight: 500;">${optVal || '<span style="color:#aaa;font-style:italic">Preview</span>'}</div>
+                <div style="display:flex; gap:4px; align-items: flex-start;">
+                  <textarea id="q-${i}-opt-text-${j}" rows="1" placeholder="Đáp án ${lbl} (hỗ trợ HTML, Toán học)..." 
+                    oninput="builderQuestions[${i}].options[${j}]=this.value; document.getElementById('q-${i}-opt-preview-${j}').innerHTML=this.value || '<span style=\\'color:#ccc;font-style:italic\\'>Preview</span>'; renderMath(document.getElementById('q-${i}-opt-preview-${j}')); this.style.height='auto'; this.style.height=(this.scrollHeight)+'px';" 
+                    style="flex:1; padding:8px; border-radius:6px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-family:monospace; font-size:0.85rem; resize:none; overflow:hidden;">${safeText}</textarea>
+                  <button class="btn btn-sm btn-ghost" onclick="triggerOptImgUpload(${i}, ${j})" title="Thêm ảnh" style="padding: 4px 8px; border: 1px solid var(--border); height: fit-content;">🖼️</button>
+                  <input type="file" id="img-upload-opt-${i}-${j}" accept="image/*" style="display:none" onchange="handleOptImgUpload(event, ${i}, ${j})">
+                </div>
+              </div>
+            </div>`}).join('')}
         </div>
         <p style="font-size:0.78rem;color:var(--muted);margin-top:10px">👆 Click chữ cái để chọn đáp án đúng — Hiện tại: <strong style="color:var(--accent3)">${['A', 'B', 'C', 'D'][q.correct]}</strong></p>
       `;
@@ -1586,13 +1598,26 @@
                     optionsHtml = `
         <div style="margin-top:14px;">
           <p style="font-size:0.78rem;color:var(--accent4);margin-bottom:12px;font-weight:600">📋 Câu Đúng/Sai 4 ý — Thang điểm: 0 sai=1đ | 1 sai=0.5đ | 2 sai=0.25đ | ≥3 sai=0đ</p>
-          ${['a', 'b', 'c', 'd'].map((lbl, j) => `
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-            <div style="width:26px;height:26px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:var(--accent4);flex-shrink:0">${lbl}</div>
-            <input type="text" value="${(si[j].text || '').replace(/"/g, '&quot;')}" placeholder="Nội dung ý ${lbl}..." oninput="updateSubItemText(${i},${j},this.value)" style="flex:1">
-            <button class="btn btn-sm ${si[j].correct === true ? 'btn-primary' : 'btn-ghost'}" onclick="setSubItemCorrect(${i},${j},true)" style="min-width:58px">Đúng</button>
-            <button class="btn btn-sm ${si[j].correct === false ? 'btn-danger' : 'btn-ghost'}" onclick="setSubItemCorrect(${i},${j},false)" style="min-width:58px">Sai</button>
-          </div>`).join('')}
+          ${['a', 'b', 'c', 'd'].map((lbl, j) => {
+              const safeText = (si[j].text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+              return `
+          <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;">
+            <div style="width:26px;height:26px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:var(--accent4);flex-shrink:0;margin-top:8px;">${lbl}</div>
+            <div style="flex:1;">
+               <div id="q-${i}-sub-preview-${j}" style="font-size: 0.9rem; padding: 6px; border: 1px dashed var(--border); border-radius: 6px; margin-bottom: 4px; min-height: 24px; background: white; color: black; font-weight: 500;">${si[j].text || '<span style="color:#aaa;font-style:italic">Preview</span>'}</div>
+               <div style="display:flex; gap:4px; align-items:flex-start;">
+                 <textarea id="q-${i}-sub-text-${j}" rows="1" placeholder="Nội dung ý ${lbl} (hỗ trợ Toán học, Ảnh)..." 
+                   oninput="updateSubItemText(${i},${j},this.value); document.getElementById('q-${i}-sub-preview-${j}').innerHTML=this.value || '<span style=\\'color:#ccc;font-style:italic\\'>Preview</span>'; renderMath(document.getElementById('q-${i}-sub-preview-${j}')); this.style.height='auto'; this.style.height=(this.scrollHeight)+'px';" 
+                   style="flex:1; padding:8px; border-radius:6px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-family:monospace; font-size:0.85rem; resize:none; overflow:hidden;">${safeText}</textarea>
+                 <button class="btn btn-sm btn-ghost" onclick="triggerSubImgUpload(${i}, ${j})" title="Thêm ảnh" style="padding: 4px 8px; border: 1px solid var(--border); height: fit-content;">🖼️</button>
+                 <input type="file" id="img-upload-sub-${i}-${j}" accept="image/*" style="display:none" onchange="handleSubImgUpload(event, ${i}, ${j})">
+               </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px; margin-top:34px;">
+               <button class="btn btn-sm ${si[j].correct === true ? 'btn-primary' : 'btn-ghost'}" onclick="setSubItemCorrect(${i},${j},true)" style="min-width:58px">Đúng</button>
+               <button class="btn btn-sm ${si[j].correct === false ? 'btn-danger' : 'btn-ghost'}" onclick="setSubItemCorrect(${i},${j},false)" style="min-width:58px">Sai</button>
+            </div>
+          </div>`}).join('')}
         </div>
       `;
                 } else if (q.type === 'fill_blank') {
@@ -1624,7 +1649,7 @@
             <div id="q-preview-${i}" class="q-live-preview">${q.text || '<span style="color:var(--muted); font-style:italic;">(Nội dung trống)</span>'}</div>
             <textarea id="q-text-${i}" rows="3" placeholder="Nhập nội dung câu hỏi (hỗ trợ HTML, Ảnh, Bảng)..." 
               oninput="builderQuestions[${i}].text=this.value; document.getElementById('q-preview-${i}').innerHTML=this.value; renderMath(document.getElementById('q-preview-${i}')); this.style.height='auto'; this.style.height=(this.scrollHeight)+'px';" 
-              style="font-weight:600; width:100%; font-size: 0.85rem; line-height:1.5; min-height:60px; overflow:hidden; resize:none; padding:10px; border-radius:8px; border:1px solid var(--border); transition: border-color 0.2s; background:var(--surface2); color:var(--muted); font-family: monospace;">${q.text}</textarea>
+              style="font-weight:600; width:100%; font-size: 0.85rem; line-height:1.5; min-height:60px; overflow:hidden; resize:none; padding:10px; border-radius:8px; border:1px solid var(--border); transition: border-color 0.2s; background:var(--surface2); color:var(--muted); font-family: monospace;">${(q.text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')}</textarea>
           </div>
           <button class="btn btn-ghost btn-sm" onclick="removeQuestion(${i})" style="height:fit-content; margin-top: 4px; padding: 4px 8px;">🗑</button>
         </div>
@@ -1635,9 +1660,20 @@
             // Render toán sau khi cập nhật DOM
             renderMath(document.getElementById('questions-list'));
             // Trigger auto-resize cho các textarea vừa render
-            builderQuestions.forEach((_, i) => {
-                const el = document.getElementById('q-text-' + i);
+            builderQuestions.forEach((qItem, idx) => {
+                const el = document.getElementById('q-text-' + idx);
                 if (el) { el.style.height = 'auto'; el.style.height = (el.scrollHeight) + 'px'; }
+                if (qItem.type === 'multiple_choice') {
+                    for (let j=0; j<4; j++) {
+                        const optEl = document.getElementById(`q-${idx}-opt-text-${j}`);
+                        if (optEl) { optEl.style.height = 'auto'; optEl.style.height = (optEl.scrollHeight) + 'px'; }
+                    }
+                } else if (qItem.type === 'true_false') {
+                    for (let j=0; j<4; j++) {
+                        const subEl = document.getElementById(`q-${idx}-sub-text-${j}`);
+                        if (subEl) { subEl.style.height = 'auto'; subEl.style.height = (subEl.scrollHeight) + 'px'; }
+                    }
+                }
             });
         }
         function addQuestion() { builderQuestions.push({ type: 'multiple_choice', text: '', options: ['', '', '', ''], correct: 0 }); renderQList(); }
@@ -1665,7 +1701,7 @@
                     const canvas = document.createElement('canvas');
                     let width = img.width;
                     let height = img.height;
-                    const MAX_WIDTH = 800; // Giới hạn chiều rộng để chuỗi Base64 không quá dài
+                    const MAX_WIDTH = 800;
                     if (width > MAX_WIDTH) {
                         height *= MAX_WIDTH / width;
                         width = MAX_WIDTH;
@@ -1674,9 +1710,87 @@
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    const resizedBase64 = canvas.toDataURL('image/webp', 0.7); // Nén thêm bằng định dạng webp
+                    const resizedBase64 = canvas.toDataURL('image/webp', 0.7);
                     const imgTag = `<br><img src="${resizedBase64}" style="max-width:100%; height:auto; display:block; margin: 10px 0; border-radius: 8px; border: 1px solid var(--border);">`;
                     insertAtCursor(idx, imgTag);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function insertOptAtCursor(idx, oIdx, text) {
+            const el = document.getElementById('q-' + idx + '-opt-text-' + oIdx);
+            if (!el) return;
+            const start = el.selectionStart;
+            const end = el.selectionEnd;
+            const oldVal = builderQuestions[idx].options[oIdx] || '';
+            builderQuestions[idx].options[oIdx] = oldVal.substring(0, start) + text + oldVal.substring(end);
+            renderQList();
+        }
+
+        function triggerOptImgUpload(qIdx, oIdx) { document.getElementById('img-upload-opt-' + qIdx + '-' + oIdx).click(); }
+        function handleOptImgUpload(event, qIdx, oIdx) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const MAX_WIDTH = 400; // Nhỏ hơn cho đáp án
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const resizedBase64 = canvas.toDataURL('image/webp', 0.7);
+                    const imgTag = `<br><img src="${resizedBase64}" style="max-width:100%; height:auto; display:block; margin: 4px 0; border-radius: 4px; border: 1px solid var(--border);">`;
+                    insertOptAtCursor(qIdx, oIdx, imgTag);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function insertSubAtCursor(idx, sIdx, text) {
+            const el = document.getElementById('q-' + idx + '-sub-text-' + sIdx);
+            if (!el) return;
+            const start = el.selectionStart;
+            const end = el.selectionEnd;
+            const oldVal = builderQuestions[idx].subItems[sIdx].text || '';
+            builderQuestions[idx].subItems[sIdx].text = oldVal.substring(0, start) + text + oldVal.substring(end);
+            renderQList();
+        }
+
+        function triggerSubImgUpload(qIdx, sIdx) { document.getElementById('img-upload-sub-' + qIdx + '-' + sIdx).click(); }
+        function handleSubImgUpload(event, qIdx, sIdx) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const MAX_WIDTH = 400;
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const resizedBase64 = canvas.toDataURL('image/webp', 0.7);
+                    const imgTag = `<br><img src="${resizedBase64}" style="max-width:100%; height:auto; display:block; margin: 4px 0; border-radius: 4px; border: 1px solid var(--border);">`;
+                    insertSubAtCursor(qIdx, sIdx, imgTag);
                 };
                 img.src = e.target.result;
             };
@@ -2083,6 +2197,7 @@
         </div>`;
             }).join('')}
     </div>`;
+            setTimeout(() => renderMath(document.getElementById('review-section')), 50);
         }
 
         function restartStudent() {
