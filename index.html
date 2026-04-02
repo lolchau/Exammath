@@ -8,6 +8,11 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap"
         rel="stylesheet">
+    <!-- KaTeX: Render ký hiệu toán học -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"
+        onload="window.katexLoaded=true"></script>
     <style>
         :root {
             --bg: #0d1117;
@@ -849,6 +854,53 @@
             }
         }
 
+        /* Table Styling */
+        table {
+            border-collapse: collapse;
+            margin: 10px 0;
+            max-width: 100%;
+            font-size: 0.95rem;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        th {
+            background: var(--surface2);
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .q-live-preview {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            padding: 14px;
+            margin-bottom: 10px;
+            min-height: 48px;
+            font-size: 0.98rem;
+            line-height: 1.6;
+            color: #111827; /* Đen đậm hơn */
+            font-weight: 600; /* Chữ đậm hơn */
+            border-left: 5px solid var(--accent2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Tăng cường độ rõ của công thức Toán KaTeX */
+        .katex {
+            color: #000 !important;
+            font-weight: 700 !important;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+
         .fade-in {
             animation: fadeUp 0.4s ease both;
         }
@@ -952,8 +1004,45 @@
                 flex-direction: column;
             }
         }
+
+        /* KaTeX styles override for dark theme */
+        .katex {
+            font-size: 1.05em;
+            color: var(--text);
+        }
+
+        .katex-display {
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+
+        .katex-display>.katex {
+            text-align: left;
+        }
+
+        .math-hint {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(121, 192, 255, 0.06);
+            border: 1px solid rgba(121, 192, 255, 0.2);
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 0.8rem;
+            color: var(--accent2);
+            margin-bottom: 18px;
+        }
+
+        .math-hint code {
+            background: rgba(121, 192, 255, 0.12);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 0.82rem;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <!-- PDF.js cho việc quét file PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
 </head>
 
 <body>
@@ -1021,6 +1110,9 @@
                             </select>
                         </div>
                     </div>
+                    <div class="math-hint">💡 <span>Dùng <code>$...$</code> cho công thức inline, <code>$$...$$</code>
+                            cho công thức riêng dòng. Ví dụ: <code>$x^2 + y^2 = r^2$</code> → <span
+                                id="math-hint-preview"></span></span></div>
                     <div id="questions-list"></div>
                     <div style="display:flex; gap:12px; margin-bottom: 24px;">
                         <button class="add-q-btn" onclick="addQuestion()" style="flex:1; margin-bottom:0;">+ Thêm câu
@@ -1029,9 +1121,13 @@
                             style="flex:1; margin-bottom:0; background:rgba(121,192,255,0.05); border-color:var(--accent2); color:var(--accent2);">📄
                             Nhập tự động từ Word / TXT</button>
                     </div>
-                    <div style="display:flex; gap:12px; justify-content:flex-end">
-                        <button class="btn btn-secondary" onclick="clearBuilder()">Xóa tất cả</button>
-                        <button class="btn btn-primary" onclick="saveExam()">💾 Lưu đề kiểm tra</button>
+                    <div style="display:flex; gap:12px; justify-content:flex-end; align-items:center">
+                        <span id="edit-mode-label"
+                            style="display:none; font-size:0.82rem; color:var(--accent4); font-weight:600;">✏️ Đang
+                            chỉnh sửa đề thi...</span>
+                        <button class="btn btn-secondary" onclick="clearBuilder()">Hủy / Xóa</button>
+                        <button class="btn btn-primary" id="save-exam-btn" onclick="saveExam()">💾 Lưu đề kiểm
+                            tra</button>
                     </div>
                 </div>
 
@@ -1138,13 +1234,18 @@
         <div class="modal" style="max-width: 650px;">
             <h3>📄 Tự động thêm từ File</h3>
             <p style="color:var(--muted); margin-bottom:12px; font-size: 0.9rem;">Hệ thống sẽ thử trích xuất câu hỏi từ
-                văn bản. Tải file <strong style="color:var(--accent2)">.docx (Word)</strong> hoặc <strong
-                    style="color:var(--accent2)">.txt</strong> lên.</p>
+                văn bản. Tải file <strong style="color:var(--accent2)">.docx</strong>, <strong
+                    style="color:var(--accent2)">.pdf</strong> hoặc <strong style="color:var(--accent2)">.txt</strong>
+                lên.</p>
             <div style="margin-bottom: 20px;">
-                <input type="file" id="import-file" accept=".docx,.txt" style="background:var(--surface2)">
+                <input type="file" id="import-file" accept=".docx,.txt,.pdf" style="background:var(--surface2)">
             </div>
             <div class="form-group" style="margin-bottom: 20px;">
                 <label>Văn bản sau khi phân tích (Bạn có thể tự sửa bằng tay lại nếu nhận diện sai)</label>
+                <div
+                    style="background:var(--accent4); color:white; padding:8px 12px; border-radius:6px; font-size:0.8rem; margin-bottom:8px;">
+                    💡 Mẹo: Với các công thức Toán, hãy bao quanh chúng bằng dấu $ (ví dụ: $x^2 + 2x + 1$) để hiển thị
+                    đẹp hơn.</div>
                 <textarea id="import-text" rows="8"
                     placeholder="Kết quả trích xuất chữ sẽ xuất hiện ở đây...&#10;&#10;Mẹo nhận diện: Đảm bảo có cấu trúc kiểu như:&#10;Câu 1: Thủ đô nước ta là?&#10;A. Hà Nội&#10;B. Đà Nẵng..."
                     style="resize: vertical; font-size: 0.85rem; line-height: 1.5; font-family: monospace;"></textarea>
@@ -1163,6 +1264,35 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <script>
+        // ---------- HÀM RENDER TOÁN HỌC (KaTeX) ----------
+        function renderMath(element) {
+            if (!element) return;
+            // Chờ KaTeX load xong nếu chưa sẵn sàng
+            if (typeof renderMathInElement === 'undefined') {
+                setTimeout(() => renderMath(element), 150);
+                return;
+            }
+            renderMathInElement(element, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '$', right: '$', display: false },
+                    { left: '\\(', right: '\\)', display: false },
+                    { left: '\\[', right: '\\]', display: true }
+                ],
+                throwOnError: false,
+                output: 'html'
+            });
+        }
+
+        // Khởi tạo preview gợi ý công thức cho giáo viên
+        document.addEventListener('DOMContentLoaded', () => {
+            const hint = document.getElementById('math-hint-preview');
+            if (hint) {
+                hint.textContent = '$x^2 + y^2 = r^2$';
+                renderMath(hint);
+            }
+        });
+
         // ---------- CẤU HÌNH BACKEND ĐÁM MÂY (FIREBASE) ----------
         // Bạn cần tạo tài khoản Firebase (Miễn phí) tại console.firebase.google.com
         // Tạo một Project -> Add Web App -> Dán đoạn config vào khối rỗng bên dưới:
@@ -1182,6 +1312,33 @@
         let exams = [];
         let results = [];
 
+        // Tạo đề thi mẫu 10 câu (Dựa theo cấu trúc đề thi thử)
+        const sample10 = {
+            id: 'sample_toan_12', code: 'TEST10',
+            title: 'Đề thi thử môn Toán 12 (Demo 10 câu)',
+            topic: 'Toán 12 Tổng hợp', time: 15,
+            createdAt: new Date().toISOString(),
+            questions: [
+                { type: 'multiple_choice', text: 'Câu 1. Cho hàm số y = f(x) có bảng biến thiên. Hàm số nghịch biến trên khoảng nào dưới đây?', options: ['(-∞; -1)', '(-1; 1)', '(1; +∞)', '(-1; +∞)'], correct: 1 },
+                { type: 'multiple_choice', text: 'Câu 2. Thể tích V của khối nón có bán kính đáy r = 3 và chiều cao h = 4 là:', options: ['V = 12π', 'V = 36π', 'V = 16π', 'V = 9π'], correct: 0 },
+                { type: 'multiple_choice', text: 'Câu 3. Họ nguyên hàm của hàm số f(x) = e^x + 2x là:', options: ['e^x + x² + C', 'e^x + 2 + C', 'e^x + 2x² + C', '1/e * e^x + x² + C'], correct: 0 },
+                { type: 'multiple_choice', text: 'Câu 4. Trong không gian Oxyz, cho điểm M(2; -1; 3). Hình chiếu vuông góc của M trên (Oxy) có tọa độ là:', options: ['(0; -1; 3)', '(2; 0; 3)', '(2; -1; 0)', '(0; 0; 3)'], correct: 2 },
+                { type: 'multiple_choice', text: 'Câu 5. Tập nghiệm S của bất phương trình log_2(x-1) < 3 là:', options: ['S = (1; 9)', 'S = (-∞; 9)', 'S = (1; 8)', 'S = [1; 9)'], correct: 0 },
+                { type: 'multiple_choice', text: 'Câu 6. Đồ thị hàm số y = (2x - 1)/(x + 1) có tiệm cận ngang là đường thẳng:', options: ['y = 2', 'y = -1', 'x = 2', 'x = -1'], correct: 0 },
+                { type: 'multiple_choice', text: 'Câu 7. Môđun của số phức z = 3 - 4i bằng:', options: ['5', '7', '-1', '25'], correct: 0 },
+                {
+                    type: 'true_false', text: 'Câu 8. Dạng Đúng/Sai (4 ý). Xét hàm số $y = x^3 - 3x$. Chọn Đúng hoặc Sai cho mỗi ý:', subItems: [
+                        { text: 'Hàm số đồng biến trên khoảng $(-1; 1)$', correct: false },
+                        { text: 'Hàm số đạt cực đại tại $x = -1$', correct: true },
+                        { text: 'Hàm số đạt cực tiểu tại $x = 1$', correct: true },
+                        { text: 'Hàm số nghịch biến trên khoảng $(1; +\\infty)$', correct: false }
+                    ]
+                },
+                { type: 'fill_blank', text: 'Câu 9. (Điền đáp án) Cho cấp số cộng (u_n) có u_1 = 3 và d = 2. Hãy điền giá trị của u_4 vào ô trống:', options: [], correct: '9' },
+                { type: 'multiple_choice', text: 'Câu 10. Diện tích hình phẳng giới hạn bởi đồ thị hàm số y = x² - 4x + 3, trục hoành và hai đường thẳng x = 1, x = 3 bằng:', options: ['4/3', '2/3', '8/3', '4'], correct: 0 }
+            ]
+        };
+
         try {
             // Kiểm tra nếu người dùng đã thay key thật
             if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
@@ -1191,9 +1348,21 @@
 
                 // Đồng bộ thời gian thực toàn cầu
                 db.ref('exams').on('value', (snap) => {
-                    exams = snap.val() || [];
+                    let remoteExams = snap.val() || [];
+
+                    // Nạp đề mẫu vào Firebase nếu chưa có (chỉ check lần đầu)
+                    if (!window.firebaseSampleChecked) {
+                        window.firebaseSampleChecked = true;
+                        if (!remoteExams.find(e => e.id === 'sample_toan_12')) {
+                            remoteExams.push(sample10);
+                            db.ref('exams').set(remoteExams);
+                        }
+                    }
+
+                    exams = remoteExams;
                     if (document.getElementById('tab-exams').style.display === 'block') renderExamsList();
                 });
+
                 db.ref('results').on('value', (snap) => {
                     results = snap.val() || [];
                     if (document.getElementById('tab-results').style.display === 'block') renderResults();
@@ -1203,26 +1372,13 @@
                 exams = JSON.parse(localStorage.getItem('me12_exams') || '[]');
                 results = JSON.parse(localStorage.getItem('me12_results') || '[]');
                 console.warn("Chưa gắn Firebase Key. Lịch sử thi sẽ chỉ lưu ở trên máy tính này.");
+
+                if (!exams.find(e => e.id === 'sample_toan_12')) {
+                    exams.push(sample10);
+                    localStorage.setItem('me12_exams', JSON.stringify(exams));
+                }
             }
         } catch (e) { console.error("Lỗi Firebase:", e); }
-
-        // Tạo dữ liệu mồi nếu mới mở web lần đầu (Trống hoàn toàn)
-        if (!isFirebaseSetup && exams.length === 0) {
-            exams = [{
-                id: 'sample1', code: 'TOAN01',
-                title: 'Kiểm tra Hàm số — Chương 1',
-                topic: 'Hàm số & Đồ thị', time: 20,
-                createdAt: new Date().toISOString(),
-                questions: [
-                    { text: 'Hàm số y = x³ - 3x² + 1 đạt cực đại tại điểm nào?', options: ['x = 0', 'x = 1', 'x = 2', 'x = -1'], correct: 0 },
-                    { text: 'Hàm số y = (x-1)/(x+2) có tiệm cận đứng là:', options: ['x = 1', 'x = -2', 'x = 2', 'y = 1'], correct: 1 },
-                    { text: 'Đạo hàm của hàm số f(x) = sin(2x) là:', options: ['cos(2x)', '2cos(2x)', '-2cos(2x)', '2sin(2x)'], correct: 1 },
-                    { text: 'Hàm số y = x⁴ - 4x² + 3 có bao nhiêu điểm cực trị?', options: ['1', '2', '3', '4'], correct: 2 },
-                    { text: 'Tập xác định của hàm số y = √(2x - 4) là:', options: ['[2, +∞)', '(2, +∞)', '(-∞, 2]', 'ℝ'], correct: 0 }
-                ]
-            }];
-            saveData();
-        }
 
         function saveData() {
             if (isFirebaseSetup) {
@@ -1236,6 +1392,11 @@
 
         // NAV
         function enterTeacher() {
+            const pass = prompt('🔐 Vui lòng nhập mật khẩu dành cho Giáo viên:');
+            if (pass !== '123456') {
+                if (pass !== null) showToast('Sai mật khẩu! Bạn không có quyền truy cập.', 'error');
+                return;
+            }
             document.getElementById('splash').style.display = 'none';
             document.getElementById('app').style.display = 'block';
             document.getElementById('teacher-view').style.display = 'block';
@@ -1281,7 +1442,47 @@
         }
         function closeImportModal() { document.getElementById('import-modal').classList.remove('open'); }
 
-        document.getElementById('import-file').addEventListener('change', function (e) {
+        // PDF.js worker setup & CMaps (Bản đồ ký tự cho tiếng Việt / Toán học)
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        }
+
+        async function extractPdfText(data) {
+            const loadingTask = pdfjsLib.getDocument({
+                data,
+                cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/cmaps/',
+                cMapPacked: true,
+            });
+            const pdf = await loadingTask.promise;
+            let fullText = '';
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+
+                // Tinh chỉnh sắp xếp: Chênh lệch tọa độ Y nhỏ (< 8) coi như cùng 1 dòng để giữ các ký tự mũ (x, 2,...) không bị nhảy dòng
+                const items = content.items.sort((a, b) => {
+                    const yDiff = a.transform[5] - b.transform[5];
+                    if (Math.abs(yDiff) < 8) return a.transform[4] - b.transform[4];
+                    return -yDiff;
+                });
+
+                let lastY = -1;
+                let pageText = '';
+                for (const item of items) {
+                    // Nếu Y thay đổi lớn (> 10) thì mới xuống dòng mới
+                    if (lastY !== -1 && Math.abs(item.transform[5] - lastY) > 10) {
+                        pageText += '\n';
+                    }
+                    pageText += item.str + (item.hasEOL ? ' ' : '');
+                    lastY = item.transform[5];
+                }
+                fullText += pageText + '\n\n';
+            }
+            // Xóa ký tự rác, khoảng trắng thừa
+            return fullText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '').replace(/ {2,}/g, ' ').trim();
+        }
+
+        document.getElementById('import-file').addEventListener('change', async function (e) {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
@@ -1296,31 +1497,42 @@
                             document.getElementById('import-text').value = result.value.trim();
                         })
                         .catch(function (err) {
-                            showToast('Lỗi khi đọc file Word. Hãy thử dạng text!', 'error');
+                            showToast('Lỗi khi đọc file Word!', 'error');
                         });
                 };
                 reader.readAsArrayBuffer(file);
+            } else if (file.name.endsWith('.pdf')) {
+                reader.onload = async function (e) {
+                    try {
+                        showToast('🔄 Đang quét PDF (Vui lòng đợi)...', 'success');
+                        const text = await extractPdfText(new Uint8Array(e.target.result));
+                        document.getElementById('import-text').value = text;
+                        showToast('✅ Đã quét xong PDF!', 'success');
+                    } catch (err) {
+                        console.error(err);
+                        showToast('Lỗi khi đọc file PDF!', 'error');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
             } else {
-                showToast('Hệ thống hiện tại chỉ hỗ trợ file .docx hoặc .txt', 'error');
+                showToast('Không hỗ trợ định dạng này!', 'error');
             }
         });
 
         function processImportText() {
             const text = document.getElementById('import-text').value;
-            if (!text.trim()) { showToast('Không có dữ liệu văn bản', 'error'); return; }
+            if (!text.trim()) { showToast('Không có dữ liệu!', 'error'); return; }
 
-            const qRegex = /(?:Câu|Bài)\s*\d+[\.:]?\s*(.*?)(?=(?:Câu|Bài)\s*\d+[\.:]?|$)/gis;
-            let matches;
-            let addedCount = 0;
+            // Regex bóc tách câu hỏi: Nhận diện Câu... cho đến khi gặp câu mới
+            const qRegex = /(?:C\s*â\s*u|B\s*\u00e0\s*i)\s*(\d+)\s*[:\.]?\s*(.*?)(?=(?:C\s*â\s*u|B\s*\u00e0\s*i)\s*(\d+)\s*[:\.]?|$)/gis;
+            let matches, addedCount = 0;
 
             while ((matches = qRegex.exec(text)) !== null) {
-                let rawBlock = matches[1].trim();
-                const optRegex = /([A-D])[\.:\)]\s*([^\n]+)/gis;
-                let ops = [];
-                let opMatch;
-
-                let questionTextStr = rawBlock;
-                let firstOptIdx = -1;
+                let rawBlock = matches[2].trim();
+                // Regex bóc tách đáp án quan trọng: Dùng lookahead (?=...) để cắt đáp án cũ khi gặp đáp án mới (A B C D dính nhau)
+                const optRegex = /([A-D])[\.:\-\)]\s*(.*?)(?=\s*[A-D][\.:\-\)]|$)/gis;
+                let ops = [], opMatch;
+                let questionTextStr = rawBlock, firstOptIdx = -1;
 
                 while ((opMatch = optRegex.exec(rawBlock)) !== null) {
                     if (firstOptIdx === -1) firstOptIdx = opMatch.index;
@@ -1331,21 +1543,19 @@
                     if (firstOptIdx !== -1) questionTextStr = rawBlock.substring(0, firstOptIdx).trim();
                     let finalOpts = ['', '', '', ''];
                     for (let i = 0; i < 4 && i < ops.length; i++) finalOpts[i] = ops[i];
-
                     builderQuestions.push({ type: 'multiple_choice', text: questionTextStr, options: finalOpts, correct: 0 });
                     addedCount++;
-                } else {
-                    builderQuestions.push({ type: 'fill_blank', text: questionTextStr, options: [], correct: '' });
+                } else if (rawBlock.length > 5) {
+                    builderQuestions.push({ type: 'fill_blank', text: rawBlock, options: [], correct: '' });
                     addedCount++;
                 }
             }
 
             if (addedCount > 0) {
-                showToast(`Đã nhận diện và trích xuất thành công ${addedCount} câu hỏi!`, 'success');
-                renderQList();
-                closeImportModal();
+                showToast(`✅ Đã bóc tách thành công ${addedCount} câu hỏi!`, 'success');
+                renderQList(); closeImportModal();
             } else {
-                showToast('Lỗi: Cấu trúc không khớp. Hãy đảm bảo nội dung có từ khóa "Câu 1:" và các đáp án "A.", "B."...', 'error');
+                showToast('Không tìm thấy câu hỏi đúng cấu trúc!', 'error');
             }
         }
 
@@ -1372,16 +1582,18 @@
         <p style="font-size:0.78rem;color:var(--muted);margin-top:10px">👆 Click chữ cái để chọn đáp án đúng — Hiện tại: <strong style="color:var(--accent3)">${['A', 'B', 'C', 'D'][q.correct]}</strong></p>
       `;
                 } else if (q.type === 'true_false') {
+                    const si = (q.subItems && q.subItems.length === 4) ? q.subItems : [{ text: '', correct: true }, { text: '', correct: true }, { text: '', correct: true }, { text: '', correct: true }];
                     optionsHtml = `
-        <div style="display:flex; gap:16px; margin-top:14px;">
-          <div class="answer-option ${q.correct === 0 ? 'correct' : ''}" style="flex:1; margin:0; border-color:${q.correct === 0 ? 'var(--accent3)' : 'var(--border)'};" onclick="setCorrect(${i},0)">
-            <div class="opt-circle" style="width:24px;height:24px;font-size:0.7rem; ${q.correct === 0 ? 'background:var(--accent3);color:#0d1117' : ''}">✓</div> <span style="font-weight:600; color:var(--text); font-size:1rem;">Đúng</span>
-          </div>
-          <div class="answer-option ${q.correct === 1 ? 'correct' : ''}" style="flex:1; margin:0; border-color:${q.correct === 1 ? 'var(--danger)' : 'var(--border)'};" onclick="setCorrect(${i},1)">
-            <div class="opt-circle" style="width:24px;height:24px;font-size:0.7rem; ${q.correct === 1 ? 'background:var(--danger);color:#fff' : ''}">✗</div> <span style="font-weight:600; color:var(--text); font-size:1rem;">Sai</span>
-          </div>
+        <div style="margin-top:14px;">
+          <p style="font-size:0.78rem;color:var(--accent4);margin-bottom:12px;font-weight:600">📋 Câu Đúng/Sai 4 ý — Thang điểm: 0 sai=1đ | 1 sai=0.5đ | 2 sai=0.25đ | ≥3 sai=0đ</p>
+          ${['a', 'b', 'c', 'd'].map((lbl, j) => `
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <div style="width:26px;height:26px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:var(--accent4);flex-shrink:0">${lbl}</div>
+            <input type="text" value="${(si[j].text || '').replace(/"/g, '&quot;')}" placeholder="Nội dung ý ${lbl}..." oninput="updateSubItemText(${i},${j},this.value)" style="flex:1">
+            <button class="btn btn-sm ${si[j].correct === true ? 'btn-primary' : 'btn-ghost'}" onclick="setSubItemCorrect(${i},${j},true)" style="min-width:58px">Đúng</button>
+            <button class="btn btn-sm ${si[j].correct === false ? 'btn-danger' : 'btn-ghost'}" onclick="setSubItemCorrect(${i},${j},false)" style="min-width:58px">Sai</button>
+          </div>`).join('')}
         </div>
-        <p style="font-size:0.78rem;color:var(--muted);margin-top:10px">👆 Click để chọn đáp án đúng cho câu hỏi</p>
       `;
                 } else if (q.type === 'fill_blank') {
                     optionsHtml = `
@@ -1397,45 +1609,162 @@
       <div class="question-card fade-in">
         <div class="q-header">
           <div class="q-num">${i + 1}</div>
-          <div class="q-content" style="display:flex; flex-direction:column; gap:8px;">
-            <div style="display:flex; align-items:center; justify-content:space-between;">
-              <span style="font-size:0.8rem; color:var(--muted); font-weight:600;">DẠNG CÂU HỎI</span>
-              <select onchange="changeQType(${i}, this.value)" style="width: auto; padding: 4px 8px; font-size: 0.8rem; background: var(--surface2);">
-                <option value="multiple_choice" ${q.type === 'multiple_choice' ? 'selected' : ''}>Trắc nghiệm 4 đáp án</option>
-                <option value="true_false" ${q.type === 'true_false' ? 'selected' : ''}>Đúng / Sai</option>
-                <option value="fill_blank" ${q.type === 'fill_blank' ? 'selected' : ''}>Điền đáp án</option>
-              </select>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 4px;">
+              <span style="font-size:0.75rem; color:var(--muted); font-weight:600;">NỘI DUNG CÂU HỎI</span>
+              <div style="display:flex; gap:6px;">
+                <button class="btn btn-sm btn-ghost" onclick="triggerImgUpload(${i})" title="Thêm ảnh" style="padding: 2px 6px; font-size: 0.9rem;">🖼️</button>
+                <button class="btn btn-sm btn-ghost" onclick="insertTable(${i})" title="Tạo bảng" style="padding: 2px 6px; font-size: 0.9rem;">📊</button>
+                <select onchange="changeQType(${i}, this.value)" style="width: auto; padding: 2px 6px; font-size: 0.75rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px;">
+                  <option value="multiple_choice" ${q.type === 'multiple_choice' ? 'selected' : ''}>Trắc nghiệm</option>
+                  <option value="true_false" ${q.type === 'true_false' ? 'selected' : ''}>Đúng / Sai</option>
+                  <option value="fill_blank" ${q.type === 'fill_blank' ? 'selected' : ''}>Điền đáp án</option>
+                </select>
+              </div>
             </div>
-            <input type="text" value="${q.text.replace(/"/g, '&quot;')}" placeholder="Nhập nội dung câu hỏi..." oninput="builderQuestions[${i}].text=this.value" style="font-weight:600">
+            <div id="q-preview-${i}" class="q-live-preview">${q.text || '<span style="color:var(--muted); font-style:italic;">(Nội dung trống)</span>'}</div>
+            <textarea id="q-text-${i}" rows="3" placeholder="Nhập nội dung câu hỏi (hỗ trợ HTML, Ảnh, Bảng)..." 
+              oninput="builderQuestions[${i}].text=this.value; document.getElementById('q-preview-${i}').innerHTML=this.value; renderMath(document.getElementById('q-preview-${i}')); this.style.height='auto'; this.style.height=(this.scrollHeight)+'px';" 
+              style="font-weight:600; width:100%; font-size: 0.85rem; line-height:1.5; min-height:60px; overflow:hidden; resize:none; padding:10px; border-radius:8px; border:1px solid var(--border); transition: border-color 0.2s; background:var(--surface2); color:var(--muted); font-family: monospace;">${q.text}</textarea>
           </div>
-          <button class="btn btn-ghost btn-sm" onclick="removeQuestion(${i})" style="height:fit-content">🗑</button>
+          <button class="btn btn-ghost btn-sm" onclick="removeQuestion(${i})" style="height:fit-content; margin-top: 4px; padding: 4px 8px;">🗑</button>
         </div>
         ${optionsHtml}
+        <input type="file" id="img-upload-${i}" accept="image/*" style="display:none" onchange="handleImgUpload(event, ${i})">
       </div>`;
             }).join('');
+            // Render toán sau khi cập nhật DOM
+            renderMath(document.getElementById('questions-list'));
+            // Trigger auto-resize cho các textarea vừa render
+            builderQuestions.forEach((_, i) => {
+                const el = document.getElementById('q-text-' + i);
+                if (el) { el.style.height = 'auto'; el.style.height = (el.scrollHeight) + 'px'; }
+            });
         }
         function addQuestion() { builderQuestions.push({ type: 'multiple_choice', text: '', options: ['', '', '', ''], correct: 0 }); renderQList(); }
         function removeQuestion(i) { builderQuestions.splice(i, 1); renderQList(); }
         function setCorrect(qi, ai) { builderQuestions[qi].correct = ai; renderQList(); }
+        function updateSubItemText(qi, si, val) {
+            if (!builderQuestions[qi].subItems) return;
+            builderQuestions[qi].subItems[si].text = val;
+        }
+        function setSubItemCorrect(qi, si, val) {
+            if (!builderQuestions[qi].subItems) return;
+            builderQuestions[qi].subItems[si].correct = val;
+            renderQList();
+        }
+
+        // TOOLBAR HELPERS
+        function triggerImgUpload(idx) { document.getElementById('img-upload-' + idx).click(); }
+        function handleImgUpload(event, idx) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const MAX_WIDTH = 800; // Giới hạn chiều rộng để chuỗi Base64 không quá dài
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const resizedBase64 = canvas.toDataURL('image/webp', 0.7); // Nén thêm bằng định dạng webp
+                    const imgTag = `<br><img src="${resizedBase64}" style="max-width:100%; height:auto; display:block; margin: 10px 0; border-radius: 8px; border: 1px solid var(--border);">`;
+                    insertAtCursor(idx, imgTag);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function insertTable(idx) {
+            const tableTag = `
+<table style="width:100%; border-collapse: collapse; margin: 10px 0;">
+  <tr>
+    <th style="border: 1px solid var(--border); padding: 8px; background: var(--surface2);">Tiêu đề 1</th>
+    <th style="border: 1px solid var(--border); padding: 8px; background: var(--surface2);">Tiêu đề 2</th>
+  </tr>
+  <tr>
+    <td style="border: 1px solid var(--border); padding: 8px;">Dữ liệu 1</td>
+    <td style="border: 1px solid var(--border); padding: 8px;">Dữ liệu 2</td>
+  </tr>
+</table>`;
+            insertAtCursor(idx, tableTag);
+        }
+
+        function insertAtCursor(idx, text) {
+            const el = document.getElementById('q-text-' + idx);
+            const start = el.selectionStart;
+            const end = el.selectionEnd;
+            const oldVal = builderQuestions[idx].text;
+            builderQuestions[idx].text = oldVal.substring(0, start) + text + oldVal.substring(end);
+            renderQList();
+        }
         function changeQType(i, type) {
             builderQuestions[i].type = type;
             if (type === 'multiple_choice') {
                 builderQuestions[i].options = ['', '', '', ''];
                 builderQuestions[i].correct = 0;
+                delete builderQuestions[i].subItems;
             } else if (type === 'true_false') {
-                builderQuestions[i].options = ['Đúng', 'Sai'];
-                builderQuestions[i].correct = 0;
+                builderQuestions[i].subItems = [
+                    { text: '', correct: true }, { text: '', correct: true },
+                    { text: '', correct: true }, { text: '', correct: true }
+                ];
+                delete builderQuestions[i].options;
+                delete builderQuestions[i].correct;
             } else if (type === 'fill_blank') {
                 builderQuestions[i].options = [];
                 builderQuestions[i].correct = '';
+                delete builderQuestions[i].subItems;
             }
             renderQList();
         }
-        function clearBuilder() { builderQuestions = []; document.getElementById('exam-title').value = ''; renderQList(); }
+        let editingExamId = null;
+
+        function clearBuilder() {
+            builderQuestions = [];
+            editingExamId = null;
+            document.getElementById('exam-title').value = '';
+            document.getElementById('exam-time').value = '45';
+            document.getElementById('edit-mode-label').style.display = 'none';
+            document.getElementById('save-exam-btn').textContent = '💾 Lưu đề kiểm tra';
+            renderQList();
+        }
+
+        function editExam(id) {
+            const exam = exams.find(e => e.id === id);
+            if (!exam) return;
+            editingExamId = id;
+            builderQuestions = JSON.parse(JSON.stringify(exam.questions));
+            document.getElementById('exam-title').value = exam.title;
+            document.getElementById('exam-time').value = exam.time;
+            // Đặt chủ đề nếu khớp
+            const topicSel = document.getElementById('exam-topic');
+            for (let opt of topicSel.options) {
+                if (opt.value === exam.topic || opt.text === exam.topic) {
+                    topicSel.value = opt.value;
+                    break;
+                }
+            }
+            document.getElementById('edit-mode-label').style.display = 'inline';
+            document.getElementById('save-exam-btn').textContent = '💾 Cập nhật đề thi';
+            showTeacherTab('create');
+            renderQList();
+            showToast(`📝 Đang chỉnh sửa: "${exam.title}"`, 'success');
+        }
+
         function generateCode() {
             const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
             return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
         }
+
         function saveExam() {
             const title = document.getElementById('exam-title').value.trim();
             const time = parseInt(document.getElementById('exam-time').value);
@@ -1448,9 +1777,23 @@
                 if (q.type === 'fill_blank' && (q.correct === null || q.correct === undefined || q.correct.toString().trim() === '')) return true;
                 return false;
             })) { showToast('Vui lòng điền đầy đủ câu hỏi và đáp án', 'error'); return; }
-            const exam = { id: Date.now().toString(), code: generateCode(), title, topic, time, createdAt: new Date().toISOString(), questions: JSON.parse(JSON.stringify(builderQuestions)) };
-            exams.push(exam); saveData(); clearBuilder();
-            showToast('✅ Đã lưu đề kiểm tra!', 'success');
+
+            if (editingExamId) {
+                // Chế độ chỉnh sửa — cập nhật đề thi cũ, GIỮ NGUYÊN code & id
+                const idx = exams.findIndex(e => e.id === editingExamId);
+                if (idx !== -1) {
+                    exams[idx] = { ...exams[idx], title, topic, time, questions: JSON.parse(JSON.stringify(builderQuestions)), updatedAt: new Date().toISOString() };
+                    saveData();
+                    showToast('✅ Đã cập nhật đề kiểm tra!', 'success');
+                }
+            } else {
+                // Chế độ tạo mới
+                const exam = { id: Date.now().toString(), code: generateCode(), title, topic, time, createdAt: new Date().toISOString(), questions: JSON.parse(JSON.stringify(builderQuestions)) };
+                exams.push(exam);
+                saveData();
+                showToast('✅ Đã lưu đề kiểm tra mới!', 'success');
+            }
+            clearBuilder();
             showTeacherTab('exams');
         }
 
@@ -1471,8 +1814,9 @@
       <div class="code-badge">${e.code}</div>
       <div style="font-size:0.78rem;color:var(--muted);text-align:center;margin-bottom:8px">Mã truy cập học sinh</div>
       <div class="tile-actions">
-        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="copyCode('${e.code}')">📋 Copy Mã 6 chữ số</button>
-        <button class="btn btn-ghost btn-sm" onclick="deleteExam('${e.id}')">🗑</button>
+        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="copyCode('${e.code}')">📋 Copy Mã</button>
+        <button class="btn btn-ghost btn-sm" onclick="editExam('${e.id}')" title="Chỉnh sửa đề thi" style="color:var(--accent4);border-color:var(--accent4)">✏️ Sửa</button>
+        <button class="btn btn-ghost btn-sm" onclick="deleteExam('${e.id}')" title="Xóa đề thi">🗑</button>
       </div>
     </div>`;
             }).join('');
@@ -1528,7 +1872,9 @@
 
             if (!exam) { showToast('Không tìm thấy đề thi với mã này. (Bạn đã kết nối Server chưa?)', 'error'); return; }
             currentExam = exam; currentStudent = name;
-            studentAnswers = new Array(exam.questions.length).fill(null);
+            studentAnswers = exam.questions.map(q =>
+                (q.type === 'true_false') ? new Array(4).fill(null) : null
+            );
             currentQ = 0; timeLeft = exam.time * 60; startTime = Date.now();
             document.getElementById('student-login').style.display = 'none';
             document.getElementById('exam-taking').style.display = 'block';
@@ -1537,13 +1883,24 @@
 
         function renderStudentExam() {
             const q = currentExam.questions[currentQ], total = currentExam.questions.length;
-            const answered = studentAnswers.filter(a => a !== null).length;
+            const answered = studentAnswers.filter((a, idx) => {
+                const qt = currentExam.questions[idx].type || 'multiple_choice';
+                if (qt === 'true_false') return Array.isArray(a) && a.every(v => v !== null);
+                return a !== null && a !== '';
+            }).length;
             document.getElementById('progress-text').textContent = `Câu ${currentQ + 1}/${total}`;
             document.getElementById('progress-bar').style.width = ((answered / total) * 100) + '%';
-            document.getElementById('q-nav').innerHTML = currentExam.questions.map((_, i) => {
+            document.getElementById('q-nav').innerHTML = currentExam.questions.map((qItem, i) => {
                 let cls = 'q-nav-btn';
                 if (i === currentQ) cls += ' current';
-                else if (studentAnswers[i] !== null) cls += ' answered';
+                else {
+                    const qt = qItem.type || 'multiple_choice';
+                    const a = studentAnswers[i];
+                    const done = qt === 'true_false'
+                        ? Array.isArray(a) && a.every(v => v !== null)
+                        : a !== null && a !== '';
+                    if (done) cls += ' answered';
+                }
                 return `<button class="${cls}" onclick="jumpToQ(${i})">${i + 1}</button>`;
             }).join('');
             q.type = q.type || 'multiple_choice';
@@ -1556,63 +1913,101 @@
         <span>${q.options[i]}</span>
       </div>`).join('');
             } else if (q.type === 'true_false') {
-                studentInputHtml = `
-      <div style="display:flex; gap:16px;">
-        <div class="answer-option ${studentAnswers[currentQ] === 0 ? 'selected' : ''}" style="flex:1; border-color:${studentAnswers[currentQ] === 0 ? 'var(--accent2)' : 'var(--border)'}" onclick="selectAnswer(0)">
-          <div class="opt-circle" style="width:24px;height:24px;font-size:0.7rem;">✓</div> <span style="font-weight:600">Đúng</span>
-        </div>
-        <div class="answer-option ${studentAnswers[currentQ] === 1 ? 'selected' : ''}" style="flex:1; border-color:${studentAnswers[currentQ] === 1 ? 'var(--accent2)' : 'var(--border)'}" onclick="selectAnswer(1)">
-          <div class="opt-circle" style="width:24px;height:24px;font-size:0.7rem;">✗</div> <span style="font-weight:600">Sai</span>
-        </div>
-      </div>`;
+                const subItems = q.subItems || [];
+                const curAns = Array.isArray(studentAnswers[currentQ]) ? studentAnswers[currentQ] : new Array(4).fill(null);
+                studentInputHtml = `<div style="margin-top:8px;">
+  <p style="font-size:0.78rem;color:var(--muted);margin-bottom:14px;">&#9432; Chọn <strong>Đúng</strong> hoặc <strong>Sai</strong> cho từng ý. Phải chọn đủ cả 4 ý.</p>
+  ${subItems.map((sub, j) => {
+                    const sel = curAns[j];
+                    return `<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;padding:12px 14px;background:var(--surface2);border-radius:10px;border:1px solid ${sel !== null ? 'var(--accent2)' : 'var(--border)'}">
+    <span style="width:26px;height:26px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:var(--accent4);flex-shrink:0">${['a', 'b', 'c', 'd'][j]}</span>
+    <span style="flex:1;line-height:1.6;font-size:0.95rem">${sub.text || '(chưa có nội dung)'}</span>
+    <button class="btn btn-sm ${sel === true ? 'btn-primary' : 'btn-ghost'}" onclick="selectSubAnswer(${currentQ},${j},true)" style="min-width:58px">Đúng</button>
+    <button class="btn btn-sm ${sel === false ? 'btn-danger' : 'btn-ghost'}" onclick="selectSubAnswer(${currentQ},${j},false)" style="min-width:58px">Sai</button>
+  </div>`;
+                }).join('')}
+</div>`;
             } else if (q.type === 'fill_blank') {
-                studentInputHtml = `
-      <div style="margin-top:16px;">
-        <input type="text" value="${(studentAnswers[currentQ] || '').replace(/"/g, '&quot;')}" placeholder="Nhập đáp án của bạn..." oninput="selectAnswer(this.value)" style="font-size: 1.1rem; padding: 14px; text-align: center; border-width: 2px;">
-      </div>`;
+                const curVal = (studentAnswers[currentQ] || '').toString().replace(/"/g, '&quot;');
+                studentInputHtml = `<div style="margin-top:16px;">
+  <input type="text" id="fill-blank-input" value="${curVal}" placeholder="Nhập đáp án của bạn..." oninput="saveFillAnswer(this.value)" style="font-size:1.1rem;padding:14px;text-align:center;border-width:2px;" autocomplete="off">
+  <p style="font-size:0.78rem;color:var(--muted);margin-top:8px">&#9432; Gõ đáp án rồi chuyển sang câu tiếp theo, không cần nhấn gì thêm.</p>
+</div>`;
             }
 
             document.getElementById('student-questions').innerHTML = `
     <div class="student-q-card fade-in">
       <div style="font-size:0.8rem;color:var(--muted);margin-bottom:10px;font-weight:600">CÂU ${currentQ + 1} / ${total} ${q.type === 'true_false' ? '— CHỌN ĐÚNG/SAI' : q.type === 'fill_blank' ? '— ĐIỀN ĐÁP ÁN' : ''}</div>
-      <div class="student-q-text">${q.text}</div>
+      <div class="student-q-text" id="q-text-render">${q.text}</div>
       ${studentInputHtml}
     </div>`;
             document.getElementById('prev-btn').style.display = currentQ > 0 ? 'inline-block' : 'none';
             document.getElementById('next-btn').style.display = currentQ < total - 1 ? 'inline-block' : 'none';
             document.getElementById('submit-btn').style.display = currentQ === total - 1 ? 'inline-block' : 'none';
+            // Render KaTeX cho câu hỏi + đáp án
+            renderMath(document.getElementById('student-questions'));
         }
 
+        function saveFillAnswer(val) {
+            studentAnswers[currentQ] = val;
+            // Chỉ cập nhật progress bar, không re-render toàn bộ (tránh mất focus & cursor)
+            const total = currentExam.questions.length;
+            const answered = studentAnswers.filter((a, idx) => {
+                const qt = currentExam.questions[idx].type || 'multiple_choice';
+                if (qt === 'true_false') return Array.isArray(a) && a.every(v => v !== null);
+                return a !== null && a !== '';
+            }).length;
+            document.getElementById('progress-bar').style.width = ((answered / total) * 100) + '%';
+        }
         function selectAnswer(ai) { studentAnswers[currentQ] = ai; renderStudentExam(); }
+        function selectSubAnswer(qIdx, subIdx, val) {
+            if (!Array.isArray(studentAnswers[qIdx])) studentAnswers[qIdx] = new Array(4).fill(null);
+            studentAnswers[qIdx][subIdx] = val;
+            renderStudentExam();
+        }
         function nextQ() { if (currentQ < currentExam.questions.length - 1) { currentQ++; renderStudentExam(); } }
         function prevQ() { if (currentQ > 0) { currentQ--; renderStudentExam(); } }
         function jumpToQ(i) { currentQ = i; renderStudentExam(); }
 
         function submitExam() {
-            const u = studentAnswers.filter(a => a === null).length;
+            const u = studentAnswers.filter((a, idx) => {
+                const qt = currentExam.questions[idx].type || 'multiple_choice';
+                if (qt === 'true_false') return !(Array.isArray(a) && a.every(v => v !== null));
+                return a === null || a === '';
+            }).length;
             if (u > 0) {
-                document.getElementById('confirm-msg').textContent = `Bạn còn ${u} câu chưa trả lời. Bạn có chắc muốn nộp bài không?`;
+                document.getElementById('confirm-msg').textContent = `Bạn còn ${u} câu chưa trả lời đủ. Bạn có chắc muốn nộp bài không?`;
                 document.getElementById('confirm-modal').classList.add('open');
             } else confirmSubmit();
         }
         function confirmSubmit() {
             closeModal(); clearTimer();
             const timeTaken = Math.max(1, Math.round((Date.now() - startTime) / 60000));
-            let correct = 0;
+            let totalPoints = 0, correctCount = 0;
+            const total = currentExam.questions.length;
+
             currentExam.questions.forEach((q, i) => {
                 let ans = studentAnswers[i];
                 let qType = q.type || 'multiple_choice';
-                if (qType === 'multiple_choice' || qType === 'true_false') {
-                    if (ans === q.correct) correct++;
+                if (qType === 'multiple_choice') {
+                    if (ans === q.correct) { totalPoints += 1; correctCount++; }
                 } else if (qType === 'fill_blank') {
-                    if (ans && ans.toString().trim().toLowerCase() === q.correct.toString().trim().toLowerCase()) correct++;
+                    if (ans && ans.toString().trim().toLowerCase() === q.correct.toString().trim().toLowerCase()) {
+                        totalPoints += 1; correctCount++;
+                    }
+                } else if (qType === 'true_false') {
+                    const subItems = q.subItems || [];
+                    const curAns = Array.isArray(ans) ? ans : new Array(subItems.length).fill(null);
+                    const wrongCount = subItems.filter((sub, j) => curAns[j] !== sub.correct).length;
+                    const pts = wrongCount === 0 ? 1 : wrongCount === 1 ? 0.5 : wrongCount === 2 ? 0.25 : 0;
+                    totalPoints += pts;
+                    if (wrongCount === 0) correctCount++;
                 }
             });
-            const total = currentExam.questions.length;
-            const score = (correct / total) * 10;
-            results.push({ examId: currentExam.id, studentName: currentStudent, score, correct, total, timeTaken, answers: [...studentAnswers], submittedAt: new Date().toISOString() });
+            const score = (totalPoints / total) * 10;
+            results.push({ examId: currentExam.id, studentName: currentStudent, score, correct: correctCount, total, timeTaken, answers: JSON.parse(JSON.stringify(studentAnswers)), submittedAt: new Date().toISOString() });
             saveData();
-            showResultScreen(score, correct, total, timeTaken);
+            showResultScreen(score, correctCount, total, timeTaken);
         }
 
         function showResultScreen(score, correct, total, timeTaken) {
@@ -1641,14 +2036,18 @@
                 const ua = studentAnswers[i];
                 let qType = q.type || 'multiple_choice';
                 let ok = false;
-                if (qType === 'multiple_choice' || qType === 'true_false') {
+                if (qType === 'multiple_choice') {
                     ok = (ua === q.correct);
                 } else if (qType === 'fill_blank') {
                     ok = (ua && ua.toString().trim().toLowerCase() === q.correct.toString().trim().toLowerCase());
+                } else if (qType === 'true_false') {
+                    const subItems = q.subItems || [];
+                    const curAns = Array.isArray(ua) ? ua : new Array(subItems.length).fill(null);
+                    ok = subItems.every((sub, j) => curAns[j] === sub.correct);
                 }
 
                 return `<div style="background:var(--surface);border:1px solid ${ok ? 'rgba(86,211,100,0.3)' : 'rgba(248,81,73,0.3)'};border-radius:10px;padding:16px;margin-bottom:12px">
-          <div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">Câu ${i + 1} — ${ok ? '<span style="color:var(--accent3)">✓ Đúng</span>' : '<span style="color:var(--danger)">✗ Sai</span>'}</div>
+          <div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">Câu ${i + 1} — ${ok ? '<span style="color:var(--accent3)">✓ Đúng</span>' : '<span style="color:var(--danger)">✗ Sai/Một phần</span>'}</div>
           <div style="font-weight:600;margin-bottom:10px">${q.text}</div>
           ${(() => {
                         if (qType === 'multiple_choice') {
@@ -1659,12 +2058,21 @@
                                 return `<div style="font-size:0.88rem;${st};padding:2px 0">${lbl}. ${q.options[j]}${ic}</div>`;
                             }).join('');
                         } else if (qType === 'true_false') {
-                            return ['Đúng', 'Sai'].map((lbl, j) => {
-                                let st = 'color:var(--muted)', ic = '';
-                                if (j === q.correct) { st = 'color:var(--accent3);font-weight:700'; ic = ' ✓'; }
-                                if (j === ua && j !== q.correct) { st = 'color:var(--danger)'; ic = ' ✗'; }
-                                return `<div style="font-size:0.88rem;${st};padding:2px 0">${lbl}${ic}</div>`;
-                            }).join('');
+                            const subItems = q.subItems || [];
+                            const curAns = Array.isArray(ua) ? ua : new Array(subItems.length).fill(null);
+                            const wrongCount = subItems.filter((sub, j) => curAns[j] !== sub.correct).length;
+                            const pts = wrongCount === 0 ? 1 : wrongCount === 1 ? 0.5 : wrongCount === 2 ? 0.25 : 0;
+                            return subItems.map((sub, j) => {
+                                const subOk = curAns[j] === sub.correct;
+                                const stuLabel = curAns[j] === null ? '(chưa chọn)' : curAns[j] ? 'Đúng' : 'Sai';
+                                const corrLabel = sub.correct ? 'Đúng' : 'Sai';
+                                return `<div style="font-size:0.88rem;padding:5px 0;display:flex;gap:8px;align-items:flex-start;border-bottom:1px solid var(--border)">
+                                  <span style="color:var(--accent4);font-weight:700;flex-shrink:0;width:18px">${['a', 'b', 'c', 'd'][j]}.</span>
+                                  <span style="flex:1;color:var(--muted);line-height:1.5">${sub.text}</span>
+                                  <span style="flex-shrink:0;font-weight:700;color:${subOk ? 'var(--accent3)' : 'var(--danger)'}">${stuLabel} ${subOk ? '✓' : '✗'}</span>
+                                  ${!subOk ? `<span style="color:var(--accent3);font-size:0.78rem;flex-shrink:0">(Đúng: ${corrLabel})</span>` : ''}
+                                </div>`;
+                            }).join('') + `<div style="font-size:0.82rem;margin-top:8px;color:var(--accent4);font-weight:600">Điểm câu này: ${pts} / 1</div>`;
                         } else if (qType === 'fill_blank') {
                             return `
                 <div style="font-size:0.88rem;color:var(--muted);padding:2px 0">Đáp án của bạn: <strong style="color:${ok ? 'var(--accent3)' : 'var(--danger)'}">${ua || '(trống)'}</strong></div>
