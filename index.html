@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MathExam 12 — Hệ thống kiểm tra Toán</title>
+    <title>EMath — Hệ thống kiểm tra Toán</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap"
         rel="stylesheet">
@@ -15,17 +15,17 @@
         onload="window.katexLoaded=true"></script>
     <style>
         :root {
-            --bg: #0d1117;
-            --surface: #161b22;
-            --surface2: #21262d;
-            --border: #30363d;
-            --accent: #f78166;
-            --accent2: #79c0ff;
-            --accent3: #56d364;
-            --accent4: #e3b341;
-            --text: #e6edf3;
-            --muted: #8b949e;
-            --danger: #f85149;
+            --bg: #0d111c;
+            --surface: #141a2f;
+            --surface2: #1e2544;
+            --border: #2a355f;
+            --accent: #00f0ff;
+            --accent2: #a91616;
+            --accent3: #00ffaa;
+            --accent4: #cfa99e;
+            --text: #e6f1f5;
+            --muted: #8ba2b9;
+            --danger: #f70733;
             --radius: 12px;
         }
 
@@ -41,6 +41,10 @@
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
+            background-image: linear-gradient(rgba(13, 17, 28, 0.93), rgba(13, 17, 28, 0.93)), url('C:/Users/DELL/.gemini/antigravity/brain/ce3551ea-5e1b-453a-8ea8-91a644d969c5/math_science_background_1775113363260.png');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
         }
 
         /* SPLASH */
@@ -57,24 +61,29 @@
         .grid-bg {
             position: absolute;
             inset: 0;
-            background-image: linear-gradient(rgba(247, 129, 102, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(247, 129, 102, 0.06) 1px, transparent 1px);
-            background-size: 40px 40px;
-            mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black, transparent);
+            background-image:
+                linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+            background-size: 80px 80px;
+            mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black, transparent);
+            pointer-events: none;
+            z-index: -1;
         }
 
         .splash-glow {
             position: absolute;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(247, 129, 102, 0.12) 0%, transparent 70%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(0, 240, 255, 0.15) 0%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
+            filter: blur(40px);
         }
 
         .splash-logo {
             font-family: 'Space Mono', monospace;
-            font-size: 3rem;
-            font-weight: 700;
+            font-size: 3.5rem;
+            font-weight: 800;
             letter-spacing: -2px;
             background: linear-gradient(135deg, var(--accent), var(--accent2));
             -webkit-background-clip: text;
@@ -82,6 +91,7 @@
             background-clip: text;
             position: relative;
             animation: fadeDown 0.6s ease forwards;
+            filter: drop-shadow(0 0 15px rgba(0, 240, 255, 0.4));
         }
 
         .splash-sub {
@@ -105,30 +115,52 @@
 
         .role-card {
             width: 220px;
-            background: var(--surface);
+            background: rgba(20, 27, 58, 0.6);
+            backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             border-radius: 16px;
             padding: 36px 28px;
             cursor: pointer;
-            transition: all 0.25s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
         .role-card:hover {
             border-color: var(--accent);
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(247, 129, 102, 0.15);
+            transform: translateY(-8px);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.25), inset 0 0 15px rgba(0, 240, 255, 0.1);
+        }
+
+        .role-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+
+        .role-card:hover::after {
+            transform: scaleX(1);
         }
 
         .role-icon {
-            font-size: 2.4rem;
-            margin-bottom: 16px;
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.3));
         }
 
         .role-title {
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             margin-bottom: 8px;
+            color: var(--text);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
         }
 
         .role-desc {
@@ -144,26 +176,29 @@
         }
 
         .topbar {
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
+            background: rgba(10, 14, 32, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--border);
             padding: 0 32px;
-            height: 60px;
+            height: 64px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
 
         .topbar-logo {
             font-family: 'Space Mono', monospace;
-            font-weight: 700;
-            font-size: 1.1rem;
+            font-weight: 800;
+            font-size: 1.3rem;
             background: linear-gradient(135deg, var(--accent), var(--accent2));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.3));
         }
 
         .topbar-right {
@@ -194,22 +229,29 @@
 
         .btn-primary {
             background: var(--accent);
-            color: #0d1117;
+            color: #030510;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+            border: 1px solid transparent;
         }
 
         .btn-primary:hover {
-            opacity: 0.85;
-            transform: translateY(-1px);
+            background: transparent;
+            color: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.6);
+            transform: translateY(-2px);
         }
 
         .btn-secondary {
-            background: var(--surface2);
+            background: rgba(20, 27, 58, 0.5);
             color: var(--text);
             border: 1px solid var(--border);
         }
 
         .btn-secondary:hover {
             border-color: var(--accent);
+            background: rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
         }
 
         .btn-danger {
@@ -245,41 +287,54 @@
         }
 
         .section-title {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 24px;
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 28px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            color: var(--text);
+            text-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
         }
 
         .tabs {
             display: flex;
-            gap: 4px;
-            background: var(--surface);
+            gap: 8px;
+            background: rgba(10, 14, 32, 0.6);
             border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 4px;
+            border-radius: 12px;
+            padding: 6px;
             margin-bottom: 28px;
             width: fit-content;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
         }
 
         .tab {
-            padding: 8px 22px;
-            border-radius: 7px;
+            padding: 10px 24px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 0.88rem;
-            font-weight: 600;
+            font-size: 0.9rem;
+            font-weight: 700;
             color: var(--muted);
-            transition: all 0.2s;
-            border: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
             background: transparent;
             font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .tab.active {
-            background: var(--accent);
-            color: #0d1117;
+            background: rgba(0, 240, 255, 0.1);
+            color: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+        }
+
+        .tab:not(.active):hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
         }
 
         .builder-header {
@@ -309,32 +364,41 @@
         input[type="password"],
         textarea,
         select {
-            background: var(--surface);
+            background: rgba(20, 27, 58, 0.4);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 10px 14px;
+            padding: 12px 16px;
             color: var(--text);
             font-family: inherit;
-            font-size: 0.92rem;
+            font-size: 0.95rem;
             outline: none;
-            transition: border-color 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             width: 100%;
         }
 
         input:focus,
         textarea:focus,
         select:focus {
-            border-color: var(--accent2);
+            border-color: var(--accent);
+            background: rgba(0, 240, 255, 0.05);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
         }
 
         .question-card {
-            background: var(--surface);
+            background: rgba(10, 14, 32, 0.6);
+            backdrop-filter: blur(8px);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 24px;
-            margin-bottom: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
             position: relative;
-            transition: border-color 0.2s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .question-card:hover {
+            border-color: rgba(0, 240, 255, 0.3);
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.1);
         }
 
         .q-header {
@@ -376,45 +440,55 @@
         }
 
         .option-label {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             border: 2px solid var(--border);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.78rem;
-            font-weight: 700;
+            font-size: 0.85rem;
+            font-weight: 800;
             flex-shrink: 0;
             color: var(--muted);
             cursor: pointer;
             transition: all 0.2s;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .option-label:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
         }
 
         .option-label.correct {
             border-color: var(--accent3);
-            background: rgba(86, 211, 100, 0.15);
+            background: rgba(0, 255, 170, 0.1);
             color: var(--accent3);
+            box-shadow: 0 0 15px rgba(0, 255, 170, 0.3);
         }
 
         .add-q-btn {
             width: 100%;
-            padding: 16px;
+            padding: 20px;
             border: 2px dashed var(--border);
-            background: transparent;
+            background: rgba(255, 255, 255, 0.02);
             border-radius: var(--radius);
             color: var(--muted);
             cursor: pointer;
             font-family: inherit;
-            font-size: 0.95rem;
-            font-weight: 600;
-            transition: all 0.2s;
+            font-size: 1rem;
+            font-weight: 700;
+            transition: all 0.3s;
             margin-bottom: 24px;
         }
 
         .add-q-btn:hover {
             border-color: var(--accent);
             color: var(--accent);
+            background: rgba(0, 240, 255, 0.05);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
         }
 
         .exams-grid {
@@ -424,11 +498,12 @@
         }
 
         .exam-tile {
-            background: var(--surface);
-            border: 1px solid var(--border);
+            background: rgba(10, 14, 32, 0.6);
+            backdrop-filter: blur(8px);
+            border: 2px solid var(--border);
             border-radius: var(--radius);
-            padding: 24px;
-            transition: all 0.2s;
+            padding: 28px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             overflow: hidden;
         }
@@ -439,19 +514,23 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 3px;
+            height: 4px;
             background: linear-gradient(90deg, var(--accent), var(--accent2));
+            box-shadow: 0 0 15px var(--accent);
         }
 
         .exam-tile:hover {
             border-color: var(--accent);
-            transform: translateY(-2px);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 240, 255, 0.2);
         }
 
         .exam-tile-title {
-            font-weight: 700;
-            font-size: 1.05rem;
-            margin-bottom: 8px;
+            font-weight: 800;
+            font-size: 1.15rem;
+            margin-bottom: 12px;
+            color: var(--text);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
         }
 
         .exam-meta {
@@ -472,15 +551,17 @@
 
         .code-badge {
             font-family: 'Space Mono', monospace;
-            background: rgba(247, 129, 102, 0.1);
-            border: 1px solid rgba(247, 129, 102, 0.3);
+            background: rgba(0, 240, 255, 0.1);
+            border: 2px solid rgba(0, 240, 255, 0.4);
             color: var(--accent);
-            border-radius: 6px;
-            padding: 6px 12px;
-            font-size: 1.1rem;
-            letter-spacing: 3px;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 1.3rem;
+            letter-spacing: 4px;
             text-align: center;
-            margin: 12px 0;
+            margin: 16px 0;
+            text-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
         }
 
         .tile-actions {
@@ -547,13 +628,21 @@
         }
 
         .login-box {
-            max-width: 400px;
+            max-width: 440px;
             margin: 80px auto;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 40px;
+            background: rgba(10, 14, 32, 0.7);
+            backdrop-filter: blur(15px);
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            padding: 48px;
             text-align: center;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 240, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .login-box:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.15);
         }
 
         .login-box h2 {
@@ -574,8 +663,9 @@
         }
 
         .exam-progress {
-            background: var(--surface);
-            border: 1px solid var(--border);
+            background: rgba(0, 240, 255, 0.03);
+            border: 1px solid rgba(0, 240, 255, 0.35);
+            box-shadow: 0 0 18px rgba(0, 240, 255, 0.08);
             border-radius: var(--radius);
             padding: 20px 24px;
             margin-bottom: 24px;
@@ -601,20 +691,24 @@
 
         .timer-display {
             font-family: 'Space Mono', monospace;
-            font-size: 1.1rem;
+            font-size: 1.3rem;
+            font-weight: 700;
             color: var(--accent);
-            min-width: 60px;
+            min-width: 80px;
             text-align: right;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
         }
 
         .timer-display.warning {
-            color: var(--danger);
+            color: var(--accent2);
+            text-shadow: 0 0 15px rgba(255, 59, 92, 0.8);
             animation: pulse 1s infinite;
         }
 
         .student-q-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
+            background: rgba(0, 240, 255, 0.02);
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.05);
             border-radius: var(--radius);
             padding: 28px;
             margin-bottom: 16px;
@@ -632,7 +726,8 @@
             align-items: center;
             gap: 12px;
             padding: 12px 16px;
-            border: 1px solid var(--border);
+            background: rgba(0, 240, 255, 0.02);
+            border: 1px solid rgba(0, 240, 255, 0.2);
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.15s;
@@ -640,13 +735,15 @@
         }
 
         .answer-option:hover {
-            border-color: var(--accent2);
-            background: rgba(121, 192, 255, 0.05);
+            border-color: var(--accent);
+            background: rgba(0, 240, 255, 0.08);
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.15);
         }
 
         .answer-option.selected {
-            border-color: var(--accent2);
-            background: rgba(121, 192, 255, 0.1);
+            border-color: var(--accent);
+            background: rgba(0, 240, 255, 0.12);
+            box-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
         }
 
         .answer-option.correct {
@@ -674,21 +771,24 @@
         }
 
         .answer-option.selected .opt-circle {
-            border-color: var(--accent2);
-            background: var(--accent2);
-            color: #0d1117;
+            border-color: var(--accent);
+            background: var(--accent);
+            color: #030510;
+            box-shadow: 0 0 15px var(--accent);
         }
 
         .answer-option.correct .opt-circle {
             border-color: var(--accent3);
             background: var(--accent3);
-            color: #0d1117;
+            color: #030510;
+            box-shadow: 0 0 15px var(--accent3);
         }
 
         .answer-option.wrong .opt-circle {
-            border-color: var(--danger);
-            background: var(--danger);
+            border-color: var(--accent2);
+            background: var(--accent2);
             color: white;
+            box-shadow: 0 0 15px var(--accent2);
         }
 
         .result-screen {
@@ -766,10 +866,16 @@
         }
 
         .breakdown-stat {
-            background: var(--surface);
-            border: 1px solid var(--border);
+            background: rgba(20, 27, 58, 0.5);
+            border: 2px solid var(--border);
             border-radius: var(--radius);
-            padding: 20px 12px;
+            padding: 24px 12px;
+            transition: all 0.3s;
+        }
+
+        .breakdown-stat:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
         }
 
         .breakdown-val {
@@ -795,8 +901,9 @@
             width: 36px;
             height: 36px;
             border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--surface);
+            border: 1px solid rgba(139, 162, 185, 0.3);
+            background: rgba(255, 255, 255, 0.02);
+            box-shadow: none;
             color: var(--muted);
             cursor: pointer;
             font-size: 0.82rem;
@@ -805,10 +912,18 @@
             font-family: inherit;
         }
 
+        .q-nav-btn:hover {
+            border-color: var(--accent);
+            background: rgba(0, 240, 255, 0.1);
+            color: var(--text);
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+        }
+
         .q-nav-btn.answered {
-            background: rgba(121, 192, 255, 0.1);
-            border-color: var(--accent2);
-            color: var(--accent2);
+            background: rgba(0, 240, 255, 0.08);
+            border: 2px solid var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 5px rgba(0, 240, 255, 0.1);
         }
 
         .q-nav-btn.current {
@@ -847,11 +962,35 @@
             0%,
             100% {
                 opacity: 1;
+                transform: scale(1);
             }
 
             50% {
-                opacity: 0.5;
+                opacity: 0.7;
+                transform: scale(1.05);
             }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-2px);
+            }
+
+            75% {
+                transform: translateX(2px);
+            }
+        }
+
+        .timer-display.critical {
+            color: #ff3b5c !important;
+            text-shadow: 0 0 15px #ff3b5c;
+            animation: pulse 0.5s infinite, shake 0.2s infinite;
         }
 
         /* Table Styling */
@@ -887,15 +1026,17 @@
             min-height: 48px;
             font-size: 0.98rem;
             line-height: 1.6;
-            color: #111827; /* Đen đậm hơn */
-            font-weight: 600; /* Chữ đậm hơn */
+            color: #111827;
+            /* Đen đậm hơn */
+            font-weight: 600;
+            /* Chữ đậm hơn */
             border-left: 5px solid var(--accent2);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         /* Tăng cường độ rõ của công thức Toán KaTeX */
         .katex {
-            color: #000 !important;
+            color: inherit !important;
             font-weight: 700 !important;
             -webkit-font-smoothing: antialiased;
             text-rendering: optimizeLegibility;
@@ -973,18 +1114,23 @@
         }
 
         .modal {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 32px;
-            max-width: 480px;
+            background: rgba(10, 14, 32, 0.9);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--accent);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 520px;
             width: 90%;
-            animation: fadeUp 0.25s ease;
+            animation: fadeUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 50px rgba(0, 240, 255, 0.2);
         }
 
         .modal h3 {
-            font-size: 1.2rem;
-            margin-bottom: 20px;
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 24px;
+            color: var(--accent);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
         }
 
         @media (max-width: 600px) {
@@ -1005,10 +1151,18 @@
             }
         }
 
+        /* Màu riêng cho công thức Toán học trong phần làm bài thi - Dịu mắt hơn */
+        #student-view .katex {
+            color: var(--accent4) !important;
+            /* Màu Vàng nhạt/Amber dịu hơn */
+            font-style: italic !important;
+            text-shadow: none;
+            /* Bỏ phát sáng rực để đỡ đau mắt */
+        }
+
         /* KaTeX styles override for dark theme */
         .katex {
             font-size: 1.05em;
-            color: var(--text);
         }
 
         .katex-display {
@@ -1050,8 +1204,8 @@
     <div id="splash">
         <div class="grid-bg"></div>
         <div class="splash-glow"></div>
-        <div class="splash-logo">MathExam<span style="color:var(--accent)">12</span></div>
-        <p class="splash-sub">Hệ thống kiểm tra Toán lớp 12</p>
+        <div class="splash-logo">EMath</div>
+        <p class="splash-sub">Hệ thống kiểm tra Toán trực tuyến</p>
         <div class="role-cards">
             <div class="role-card" onclick="enterTeacher()">
                 <div class="role-icon">👨‍🏫</div>
@@ -1068,7 +1222,7 @@
 
     <div id="app">
         <div class="topbar">
-            <div class="topbar-logo">MathExam12</div>
+            <div class="topbar-logo">EMath</div>
             <div class="topbar-right">
                 <span class="badge" id="role-badge">—</span>
                 <button class="btn btn-ghost btn-sm" onclick="goHome()">← Trang chủ</button>
@@ -1165,6 +1319,32 @@
                             thi →</button>
                         <p style="margin-top:16px; font-size:0.8rem; color:var(--muted)">Thử với mã: <strong
                                 style="color:var(--accent); font-family:'Space Mono',monospace">TOAN01</strong></p>
+                    </div>
+                </div>
+
+                <div id="student-intro" style="display:none">
+                    <div class="login-box fade-in" style="max-width: 550px; padding: 40px;">
+                        <div style="font-size:3.5rem; margin-bottom:16px; filter: drop-shadow(0 0 15px var(--accent))">📝</div>
+                        <p style="text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; color: var(--accent); margin-bottom: 8px; font-weight: 700;">Thông tin đề thi</p>
+                        <h2 id="intro-title" style="color:var(--text); font-size: 1.8rem; margin-bottom: 32px; text-shadow: 0 0 15px rgba(0,240,255,0.3); line-height: 1.3;">Đang tải...</h2>
+                        
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:32px;">
+                            <div class="breakdown-stat" style="padding: 16px;">
+                                <div style="font-size: 0.75rem; color: var(--muted); margin-bottom: 4px;">SỐ CÂU HỎI</div>
+                                <div style="font-size: 1.4rem; font-weight: 800; color: var(--accent);"><span id="intro-count">0</span></div>
+                            </div>
+                            <div class="breakdown-stat" style="padding: 16px;">
+                                <div style="font-size: 0.75rem; color: var(--muted); margin-bottom: 4px;">THỜI GIAN</div>
+                                <div style="font-size: 1.4rem; font-weight: 800; color: var(--accent);"><span id="intro-time">0</span>'</div>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(255, 59, 92, 0.05); border: 1px solid rgba(255, 59, 92, 0.2); border-radius: 12px; padding: 16px 20px; text-align: left; margin-bottom: 32px;">
+                            <p style="color: #ff3b5c; font-weight: 700; font-size: 0.9rem; margin-bottom: 4px;">⚠️ QUY ĐỊNH PHÒNG THI:</p>
+                            <p style="font-size: 0.85rem; color: var(--muted); line-height: 1.5;">Hệ thống sẽ ghi nhận nếu bạn thoát khỏi màn hình hoặc chuyển sang tab khác. Hãy tập trung làm bài cho đến khi kết thúc.</p>
+                        </div>
+
+                        <button class="btn btn-primary" style="width:100%; padding:18px; font-size:1.1rem; letter-spacing: 1px;" onclick="startActualExam()">SẴN SÀNG LÀM BÀI →</button>
                     </div>
                 </div>
 
@@ -1574,9 +1754,9 @@
                     optionsHtml = `
         <div class="options-grid">
           ${['A', 'B', 'C', 'D'].map((lbl, j) => {
-              const optVal = q.options && q.options[j] ? q.options[j] : '';
-              const safeText = optVal.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-              return `
+                        const optVal = q.options && q.options[j] ? q.options[j] : '';
+                        const safeText = optVal.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                        return `
             <div class="option-row" style="align-items: flex-start;">
               <div class="option-label ${q.correct === j ? 'correct' : ''}" onclick="setCorrect(${i},${j})" title="Chọn đáp án đúng" style="margin-top: 8px;">${lbl}</div>
               <div style="flex:1;">
@@ -1599,8 +1779,8 @@
         <div style="margin-top:14px;">
           <p style="font-size:0.78rem;color:var(--accent4);margin-bottom:12px;font-weight:600">📋 Câu Đúng/Sai 4 ý — Thang điểm: 0 sai=1đ | 1 sai=0.5đ | 2 sai=0.25đ | ≥3 sai=0đ</p>
           ${['a', 'b', 'c', 'd'].map((lbl, j) => {
-              const safeText = (si[j].text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-              return `
+                        const safeText = (si[j].text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                        return `
           <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;">
             <div style="width:26px;height:26px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:var(--accent4);flex-shrink:0;margin-top:8px;">${lbl}</div>
             <div style="flex:1;">
@@ -1664,12 +1844,12 @@
                 const el = document.getElementById('q-text-' + idx);
                 if (el) { el.style.height = 'auto'; el.style.height = (el.scrollHeight) + 'px'; }
                 if (qItem.type === 'multiple_choice') {
-                    for (let j=0; j<4; j++) {
+                    for (let j = 0; j < 4; j++) {
                         const optEl = document.getElementById(`q-${idx}-opt-text-${j}`);
                         if (optEl) { optEl.style.height = 'auto'; optEl.style.height = (optEl.scrollHeight) + 'px'; }
                     }
                 } else if (qItem.type === 'true_false') {
-                    for (let j=0; j<4; j++) {
+                    for (let j = 0; j < 4; j++) {
                         const subEl = document.getElementById(`q-${idx}-sub-text-${j}`);
                         if (subEl) { subEl.style.height = 'auto'; subEl.style.height = (subEl.scrollHeight) + 'px'; }
                     }
@@ -1697,7 +1877,7 @@
             const reader = new FileReader();
             reader.onload = function (e) {
                 const img = new Image();
-                img.onload = function() {
+                img.onload = function () {
                     const canvas = document.createElement('canvas');
                     let width = img.width;
                     let height = img.height;
@@ -1736,7 +1916,7 @@
             const reader = new FileReader();
             reader.onload = function (e) {
                 const img = new Image();
-                img.onload = function() {
+                img.onload = function () {
                     const canvas = document.createElement('canvas');
                     let width = img.width;
                     let height = img.height;
@@ -1775,7 +1955,7 @@
             const reader = new FileReader();
             reader.onload = function (e) {
                 const img = new Image();
-                img.onload = function() {
+                img.onload = function () {
                     const canvas = document.createElement('canvas');
                     let width = img.width;
                     let height = img.height;
@@ -1989,10 +2169,22 @@
             studentAnswers = exam.questions.map(q =>
                 (q.type === 'true_false') ? new Array(4).fill(null) : null
             );
-            currentQ = 0; timeLeft = exam.time * 60; startTime = Date.now();
+            currentQ = 0; timeLeft = exam.time * 60;
+
+            // Hiển thị màn hình giới thiệu đề thay vì vào thẳng bài làm
+            document.getElementById('intro-title').textContent = exam.title;
+            document.getElementById('intro-count').textContent = exam.questions.length;
+            document.getElementById('intro-time').textContent = exam.time;
+
             document.getElementById('student-login').style.display = 'none';
+            document.getElementById('student-intro').style.display = 'block';
+        }
+
+        function startActualExam() {
+            document.getElementById('student-intro').style.display = 'none';
             document.getElementById('exam-taking').style.display = 'block';
             renderStudentExam(); startTimer();
+            startTime = Date.now(); // Bắt đầu tính thời gian từ lúc nhấn "Sẵn sàng"
         }
 
         function renderStudentExam() {
@@ -2218,7 +2410,14 @@
             const el = document.getElementById('timer-display');
             if (!el) return;
             el.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-            el.classList.toggle('warning', timeLeft <= 120);
+
+            // Cảnh báo thời gian
+            el.classList.toggle('warning', timeLeft <= 300 && timeLeft > 60);
+            el.classList.toggle('critical', timeLeft <= 60);
+
+            if (timeLeft === 300) showToast('⏰ Còn 5 phút nữa!', 'warning');
+            if (timeLeft === 60) showToast('⚠️ Còn 1 phút! Khẩn trương nộp bài.', 'error');
+            if (timeLeft === 30) showToast('⏳ Còn 30 giây!', 'error');
         }
         function clearTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
 
