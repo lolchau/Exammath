@@ -14,19 +14,44 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"
         onload="window.katexLoaded=true"></script>
     <style>
-        :root {
-            --bg: #0d111c;
-            --surface: #141a2f;
-            --surface2: #1e2544;
-            --border: #2a355f;
-            --accent: #00f0ff;
-            --accent2: #a91616;
-            --accent3: #00ffaa;
-            --accent4: #cfa99e;
-            --text: #e6f1f5;
-            --muted: #8ba2b9;
-            --danger: #f70733;
+        :root[data-theme='light'] {
+            --bg: #f5f8ff;
+            --surface: rgba(255, 255, 255, 0.82);
+            --surface-solid: #ffffff;
+            --surface2: #eff4fb;
+            --border: #dce4f2;
+            --accent: #00bef0;
+            --accent2: #ff007a;
+            --accent3: #00d9a6;
+            --accent4: #8a9fc0;
+            --accent-translucent: rgba(0, 190, 240, 0.1);
+            --text: #0a0e1a;
+            --muted: #5a6b8a;
+            --danger: #ff3b5c;
+            --overlay: rgba(245, 248, 255, 0.9);
             --radius: 12px;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            --glow: rgba(0, 190, 240, 0.15);
+        }
+
+        :root[data-theme='dark'] {
+            --bg: #05070a;
+            --surface: rgba(18, 24, 40, 0.95);
+            --surface-solid: #121828;
+            --surface2: #1e263a;
+            --border: #2d3b5e;
+            --accent: #00f0ff;
+            --accent2: #ff007a;
+            --accent3: #00ffaa;
+            --accent4: #e6f1f5;
+            --accent-translucent: rgba(0, 240, 255, 0.15);
+            --text: #ffffff;
+            --muted: #a0aec0;
+            --danger: #ff3b5c;
+            --overlay: rgba(5, 7, 10, 0.94);
+            --radius: 12px;
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            --glow: rgba(0, 240, 255, 0.3);
         }
 
         * {
@@ -41,7 +66,7 @@
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
-            background-image: linear-gradient(rgba(13, 17, 28, 0.93), rgba(13, 17, 28, 0.93)), url('C:/Users/DELL/.gemini/antigravity/brain/ce3551ea-5e1b-453a-8ea8-91a644d969c5/math_science_background_1775113363260.png');
+            background-image: linear-gradient(var(--overlay), var(--overlay)), url('C:/Users/DELL/.gemini/antigravity/brain/ce3551ea-5e1b-453a-8ea8-91a644d969c5/math_science_background_1775113363260.png');
             background-size: cover;
             background-attachment: fixed;
             background-position: center;
@@ -62,22 +87,23 @@
             position: absolute;
             inset: 0;
             background-image:
-                linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
-            background-size: 80px 80px;
+                linear-gradient(rgba(0, 190, 240, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 190, 240, 0.08) 1px, transparent 1px);
+            background-size: 60px 60px;
             mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black, transparent);
             pointer-events: none;
             z-index: -1;
+            opacity: 0.5;
         }
 
         .splash-glow {
             position: absolute;
             width: 800px;
             height: 800px;
-            background: radial-gradient(circle, rgba(0, 240, 255, 0.15) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(0, 190, 240, 0.15) 0%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
-            filter: blur(40px);
+            filter: blur(60px);
         }
 
         .splash-logo {
@@ -91,7 +117,7 @@
             background-clip: text;
             position: relative;
             animation: fadeDown 0.6s ease forwards;
-            filter: drop-shadow(0 0 15px rgba(0, 240, 255, 0.4));
+            filter: drop-shadow(0 0 10px rgba(0, 190, 240, 0.3));
         }
 
         .splash-sub {
@@ -115,7 +141,7 @@
 
         .role-card {
             width: 220px;
-            background: rgba(20, 27, 58, 0.6);
+            background: var(--surface);
             backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             border-radius: 16px;
@@ -125,12 +151,13 @@
             text-align: center;
             position: relative;
             overflow: hidden;
+            box-shadow: var(--shadow);
         }
 
         .role-card:hover {
             border-color: var(--accent);
             transform: translateY(-8px);
-            box-shadow: 0 0 30px rgba(0, 240, 255, 0.25), inset 0 0 15px rgba(0, 240, 255, 0.1);
+            box-shadow: 0 15px 35px rgba(0, 190, 240, 0.15), inset 0 0 10px rgba(0, 190, 240, 0.05);
         }
 
         .role-card::after {
@@ -176,8 +203,8 @@
         }
 
         .topbar {
-            background: rgba(10, 14, 32, 0.8);
-            backdrop-filter: blur(12px);
+            background: var(--surface);
+            backdrop-filter: blur(15px);
             border-bottom: 2px solid var(--border);
             padding: 0 32px;
             height: 64px;
@@ -187,7 +214,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
         }
 
         .topbar-logo {
@@ -198,7 +225,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.3));
+            filter: drop-shadow(0 0 8px var(--glow));
         }
 
         .topbar-right {
@@ -228,18 +255,16 @@
         }
 
         .btn-primary {
-            background: var(--accent);
-            color: #030510;
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 190, 240, 0.3);
             border: 1px solid transparent;
         }
 
         .btn-primary:hover {
-            background: transparent;
-            color: var(--accent);
-            border-color: var(--accent);
-            box-shadow: 0 0 25px rgba(0, 240, 255, 0.6);
+            filter: brightness(1.1);
             transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 190, 240, 0.4);
         }
 
         .btn-secondary {
@@ -275,6 +300,36 @@
             border-color: var(--muted);
         }
 
+        .theme-switch-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text);
+            font-size: 1.2rem;
+            box-shadow: var(--shadow);
+            padding: 0;
+            line-height: 1;
+        }
+
+        .theme-switch-btn:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px) rotate(10deg);
+            box-shadow: 0 5px 15px var(--glow);
+            background: var(--surface-solid);
+        }
+
+        .theme-switch-btn span {
+            display: block;
+            filter: drop-shadow(0 0 2px var(--glow));
+        }
+
         .main {
             padding: 32px;
             max-width: 1100px;
@@ -300,13 +355,12 @@
         .tabs {
             display: flex;
             gap: 8px;
-            background: rgba(10, 14, 32, 0.6);
+            background: var(--surface2);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 6px;
             margin-bottom: 28px;
             width: fit-content;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
         }
 
         .tab {
@@ -326,10 +380,10 @@
         }
 
         .tab.active {
-            background: rgba(0, 240, 255, 0.1);
+            background: var(--surface-solid);
             color: var(--accent);
             border-color: var(--accent);
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 190, 240, 0.15);
         }
 
         .tab:not(.active):hover {
@@ -364,7 +418,7 @@
         input[type="password"],
         textarea,
         select {
-            background: rgba(20, 27, 58, 0.4);
+            background: var(--surface-solid);
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 12px 16px;
@@ -385,20 +439,19 @@
         }
 
         .question-card {
-            background: rgba(10, 14, 32, 0.6);
-            backdrop-filter: blur(8px);
+            background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
             padding: 32px;
             margin-bottom: 24px;
             position: relative;
             transition: all 0.3s;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
 
         .question-card:hover {
-            border-color: rgba(0, 240, 255, 0.3);
-            box-shadow: 0 0 25px rgba(0, 240, 255, 0.1);
+            border-color: var(--accent);
+            box-shadow: 0 12px 40px var(--glow);
         }
 
         .q-header {
@@ -498,14 +551,14 @@
         }
 
         .exam-tile {
-            background: rgba(10, 14, 32, 0.6);
-            backdrop-filter: blur(8px);
+            background: var(--surface);
             border: 2px solid var(--border);
             border-radius: var(--radius);
             padding: 28px;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
 
         .exam-tile::before {
@@ -514,15 +567,15 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
+            height: 5px;
             background: linear-gradient(90deg, var(--accent), var(--accent2));
-            box-shadow: 0 0 15px var(--accent);
+            box-shadow: 0 2px 10px rgba(0, 190, 240, 0.3);
         }
 
         .exam-tile:hover {
             border-color: var(--accent);
             transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 15px 35px rgba(0, 240, 255, 0.2);
+            box-shadow: 0 15px 45px var(--glow);
         }
 
         .exam-tile-title {
@@ -630,13 +683,12 @@
         .login-box {
             max-width: 440px;
             margin: 80px auto;
-            background: rgba(10, 14, 32, 0.7);
-            backdrop-filter: blur(15px);
+            background: var(--surface);
             border: 2px solid var(--border);
             border-radius: 20px;
             padding: 48px;
             text-align: center;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 240, 255, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
             transition: all 0.3s;
         }
 
@@ -663,9 +715,9 @@
         }
 
         .exam-progress {
-            background: rgba(0, 240, 255, 0.03);
-            border: 1px solid rgba(0, 240, 255, 0.35);
-            box-shadow: 0 0 18px rgba(0, 240, 255, 0.08);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             border-radius: var(--radius);
             padding: 20px 24px;
             margin-bottom: 24px;
@@ -706,9 +758,9 @@
         }
 
         .student-q-card {
-            background: rgba(0, 240, 255, 0.02);
-            border: 1px solid rgba(0, 240, 255, 0.25);
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.05);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             border-radius: var(--radius);
             padding: 28px;
             margin-bottom: 16px;
@@ -726,8 +778,8 @@
             align-items: center;
             gap: 12px;
             padding: 12px 16px;
-            background: rgba(0, 240, 255, 0.02);
-            border: 1px solid rgba(0, 240, 255, 0.2);
+            background: var(--surface2);
+            border: 1px solid var(--border);
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.15s;
@@ -736,14 +788,14 @@
 
         .answer-option:hover {
             border-color: var(--accent);
-            background: rgba(0, 240, 255, 0.08);
-            box-shadow: 0 0 12px rgba(0, 240, 255, 0.15);
+            background: var(--surface-solid);
+            box-shadow: 0 6px 15px var(--glow);
         }
 
         .answer-option.selected {
             border-color: var(--accent);
-            background: rgba(0, 240, 255, 0.12);
-            box-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
+            background: var(--accent-translucent);
+            box-shadow: 0 6px 18px var(--glow);
         }
 
         .answer-option.correct {
@@ -1204,6 +1256,11 @@
     <div id="splash">
         <div class="grid-bg"></div>
         <div class="splash-glow"></div>
+        <div style="position: absolute; top: 24px; right: 24px;">
+            <button class="theme-switch-btn" onclick="toggleTheme()" title="Chuyển chế độ sáng/tối">
+                <span class="theme-icon-splash">🌙</span>
+            </button>
+        </div>
         <div class="splash-logo">EMath</div>
         <p class="splash-sub">Hệ thống kiểm tra Toán trực tuyến</p>
         <div class="role-cards">
@@ -1221,13 +1278,17 @@
     </div>
 
     <div id="app">
-        <div class="topbar">
+        <header class="topbar">
             <div class="topbar-logo">EMath</div>
             <div class="topbar-right">
+                <button class="theme-switch-btn" id="theme-toggle-app" onclick="toggleTheme()"
+                    title="Chuyển chế độ sáng/tối" style="margin-right: 8px;">
+                    <span id="theme-icon-app">🌙</span>
+                </button>
                 <span class="badge" id="role-badge">—</span>
                 <button class="btn btn-ghost btn-sm" onclick="goHome()">← Trang chủ</button>
             </div>
-        </div>
+        </header>
 
         <!-- TEACHER -->
         <div id="teacher-view">
@@ -1459,6 +1520,30 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <script>
+        // Theme Management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const icons = document.querySelectorAll('#theme-icon-app, .theme-icon-splash');
+            icons.forEach(icon => {
+                if (icon) icon.innerText = theme === 'dark' ? '☀️' : '🌙';
+            });
+        }
+
+        initTheme();
+
         // ---------- HÀM RENDER TOÁN HỌC (KaTeX) ----------
         function renderMath(element) {
             if (!element) return;
